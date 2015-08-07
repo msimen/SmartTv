@@ -1,0 +1,3 @@
+# SmartTv
+
+armebi is important
