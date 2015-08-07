@@ -1,0 +1,31 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@android:color/transparent" >
+
+    <view
+        android:id="@+id/vFullView"
+        class="itri.smarttvsdk.views.HomeAppFullView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_centerInParent="true"
+        android:background="@android:color/transparent"  />
+
+    <view
+        android:id="@+id/vRightView"
+        class="itri.smarttvsdk.views.HomeAppRightView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentRight="true"
+        android:background="@android:color/transparent"  />
+
+    <view
+        android:id="@+id/vBottomView"
+        class="itri.smarttvsdk.views.HomeAppBottomView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/transparent"  />
+
+</RelativeLayout><!-- From: file:/Users/mimi/Android/DateMeNowB/SmartTvHomeNew/smarttvsdk/src/main/res/layout/homeappactivitybase.xml --><!-- From: file:/Users/mimi/Android/DateMeNowB/SmartTvHomeNew/stepbystep/build/intermediates/exploded-aar/SmartTvHomeNew/smarttvsdk/unspecified/res/layout/homeappactivitybase.xml -->

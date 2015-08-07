@@ -1,0 +1,6 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rlMain"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+</RelativeLayout><!-- From: file:/Users/mimi/Android/DateMeNowB/SmartTvHomeNew/smarttvsdk/src/main/res/layout/homeappbottomview.xml --><!-- From: file:/Users/mimi/Android/DateMeNowB/SmartTvHomeNew/stepbystep/build/intermediates/exploded-aar/SmartTvHomeNew/smarttvsdk/unspecified/res/layout/homeappbottomview.xml -->
