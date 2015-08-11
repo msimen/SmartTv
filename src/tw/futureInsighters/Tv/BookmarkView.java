@@ -36,14 +36,13 @@ public class BookmarkView extends HomeAppFullView {
 		super.onInit();
 		View content = this.inflate(getContext(), R.layout.fullview, this);
 		this.setBackgroundColor(Color.TRANSPARENT);
-
+		
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
 		new android.os.Handler().postDelayed(new Runnable() {
 			public void run() {
 				drawerLayout.openDrawer(Gravity.START);
 			}
-		}, 1000);
-
+		}, 500);
 	}
 }

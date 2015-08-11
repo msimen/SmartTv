@@ -39,7 +39,7 @@ public class HistoryView extends HomeAppFullView {
 			public void run() {
 				drawerLayout.openDrawer(Gravity.END);
 			}
-		}, 1000);
+		}, 500);
 
 	}
 }

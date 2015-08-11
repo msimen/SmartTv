@@ -14,7 +14,6 @@ import org.allseenaliance.alljoyn.AllJoynService;
 import org.allseenaliance.alljoyn.Observable;
 import org.allseenaliance.alljoyn.Observer;
 
-import tw.futureInsighters.Tv.R;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -23,6 +22,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Display;
@@ -55,12 +55,14 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private final String CONTROLLER_CMD_UI_SHOW_BOOKMARK = "ISTVSsb";
 	private final String CONTROLLER_CMD_UI_HIDE_HISTORY = "ISTVShh";
 	private final String CONTROLLER_CMD_UI_HIDE_BOOKMARK = "ISTVShb";
-	private final String CONTROLLER_CMD_VL = "ISTVSvl";
+	private final String CONTROLLER_CMD_VOLUME = "ISTVSvl";
+	private final String CONTROLLER_CMD_CHANNEL = "ISTVScn";
 
 	private enum Direction {
 		LEFT, RIGHT
 	};
-	private enum UIStatus{
+
+	private enum UIStatus {
 		OPEN, CLOSED
 	}
 
@@ -71,13 +73,12 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private boolean scrollAllowed = true;
 	private int curFocusApp = 5;
 	private int screenWidth;
-	
+
 	private UIStatus appsListStatus = UIStatus.CLOSED;
-	
+
 	/* views */
-	private BottomView bottomView;
-	private BookmarkView bookmarkView;
-	private HistoryView historyView;
+	// private UIStatus bookmarkViewStatus = UIStatus.CLOSED;
+	// private UIStatus historyViewStatus = UIStatus.CLOSED;
 
 	// alljoyn
 	private Button join;
@@ -94,34 +95,29 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private static final int HANDLE_CHANNEL_STATE_CHANGED_EVENT = 1;
 	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 2;
 
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		historyView = new HistoryView(this);
-		bottomView = new BottomView(this);
-		showAppsList();
-		//startHistoryView();
-//		try{
-//			getChannelInfo();
-//		}catch(Exception e){
-//			
-//		}
-		//startBookmarkView();
-		// FullView fv = new FullView(this);
-		// this.setAppContentView(fv);
-		Toast.makeText(this, "Channel:" + this.getChannelNumber(), Toast.LENGTH_SHORT).show();
 
-		// launcher
+		// try{
+		// getChannelInfo();
+		// }catch(Exception e){
+		//
+		// }
+
+		Toast.makeText(this, "Channel:" + this.getChannelNumber(),
+				Toast.LENGTH_SHORT).show();
+
+		/* app list initialize */
 		getScreenSize();
-		loadApps();
-		
-//		new android.os.Handler().postDelayed(new Runnable() {
-//			public void run() {
-//				
-//			}
-//		}, 4000);
+		// loadApps();
+		showAppsList();
+
+		// new android.os.Handler().postDelayed(new Runnable() {
+		// public void run() {
+		//
+		// }
+		// }, 4000);
 
 		// Alljoyn
 		start = (Button) findViewById(R.id.startchannel);
@@ -176,7 +172,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				start.performClick();
 			}
 		}, 3000);
-		 
+
 		// Stop server (Useless)
 		stop.setOnClickListener(new OnClickListener() {
 
@@ -196,16 +192,17 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		join.setOnClickListener(new OnClickListener() {
 
 			@Override
-			public void onClick(View v) {			
-				
+			public void onClick(View v) {
+
 				final Dialog dialog = new Dialog(MainActivity.this);
 				dialog.requestWindowFeature(dialog.getWindow().FEATURE_NO_TITLE);
 				dialog.setContentView(R.layout.usejoindialog);
 
-				// Find the channel in the channel list				
-				ArrayAdapter<String> channelListAdapter = new ArrayAdapter<String>(MainActivity.this,
-						android.R.layout.test_list_item);
-				final ListView channelList = (ListView) dialog.findViewById(R.id.useJoinChannelList);
+				// Find the channel in the channel list
+				ArrayAdapter<String> channelListAdapter = new ArrayAdapter<String>(
+						MainActivity.this, android.R.layout.test_list_item);
+				final ListView channelList = (ListView) dialog
+						.findViewById(R.id.useJoinChannelList);
 				channelList.setAdapter(channelListAdapter);
 
 				List<String> channels = mChatApplication.getFoundChannels();
@@ -232,14 +229,16 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				if (!found) {
 					new android.os.Handler().postDelayed(new Runnable() {
 						public void run() {
-							Toast.makeText(getApplicationContext(), "bad", Toast.LENGTH_SHORT).show();
+							Toast.makeText(getApplicationContext(), "bad",
+									Toast.LENGTH_SHORT).show();
 							join.performClick();
 						}
 					}, 6000);
 					return;
 				}
-				Toast.makeText(getApplicationContext(), "good", Toast.LENGTH_SHORT).show();
-				
+				Toast.makeText(getApplicationContext(), "good",
+						Toast.LENGTH_SHORT).show();
+
 				// Set channel name and join
 				mChatApplication.useSetChannelName(name);
 				mChatApplication.useJoinChannel();
@@ -272,7 +271,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				// }
 				// });
 
-				Button cancel = (Button) dialog.findViewById(R.id.useJoinCancel);
+				Button cancel = (Button) dialog
+						.findViewById(R.id.useJoinCancel);
 				cancel.setOnClickListener(new View.OnClickListener() {
 					public void onClick(View view) {
 
@@ -284,7 +284,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			}
 		});
 
-		// Simulate click join button 
+		// Simulate click join button
 		new android.os.Handler().postDelayed(new Runnable() {
 			public void run() {
 				join.performClick();
@@ -316,58 +316,60 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		mChatApplication.addObserver(this);
 
 		updateChannelState();
-
-		Button startfv = (Button) findViewById(R.id.startfv);
-		startfv.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-				// startBookmarkView();
-				loadApps();
-			}
-		});
 	}
 
 	/* view control */
-	private void startRv() {
-		RightView rv = new RightView(getApplicationContext());
-		this.setAppContentView(rv);
+
+	private void showAppsList() {
+		appsListStatus = UIStatus.OPEN;
+		BottomView bv = new BottomView(this);
+		setAppContentView(bv);
+		loadApps();
 	}
+
 	private void startBookmarkView() {
+		// bookmarkViewStatus = UIStatus.OPEN;
+		appsListStatus = UIStatus.CLOSED;
 		BookmarkView fv = new BookmarkView(this);
 		this.setAppContentView(fv);
 	}
+
 	private void startHistoryView() {
+		// historyViewStatus = UIStatus.OPEN;
+		appsListStatus = UIStatus.CLOSED;
 		HistoryView fv = new HistoryView(this);
 		this.setAppContentView(fv);
 	}
-	
-	private void hideBottomView(){
+
+	private void hideBottomView() {
+		appsListStatus = UIStatus.CLOSED;
 		final HorizontalScrollView appsLayout = (HorizontalScrollView) findViewById(R.id.appsLayout);
 		appsLayout.animate().translationY(450);
 	}
-	private void hideBookmarkView(){
-		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
+	private void hideBookmarkView() {
+		// bookmarkViewStatus = UIStatus.CLOSED();
+		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerLayout.closeDrawer(Gravity.START);
 	}
-	private void hideHistoryView(){
-		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
+	private void hideHistoryView() {
+		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerLayout.closeDrawer(Gravity.END);
 	}
-	
 
 	/* IR control handler */
 
 	@Override
 	protected void onOtherKey(int keyCode) {
-		Toast.makeText(this, "stepbystep_IR_Other:" + keyCode, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "stepbystep_IR_Other:" + keyCode,
+				Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onNumberKey(int number) {
-		Toast.makeText(this, "stepbystep_IR_Number:" + number, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "stepbystep_IR_Number:" + number,
+				Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -396,7 +398,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	}
 
 	private void updateChannelState() {
-		AllJoynService.HostChannelState channelState = mChatApplication.hostGetChannelState();
+		AllJoynService.HostChannelState channelState = mChatApplication
+				.hostGetChannelState();
 		String name = mChatApplication.hostGetChannelName();
 		// boolean haveName = true;
 		if (name == null) {
@@ -404,35 +407,43 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			name = "Not set";
 		}
 
-		Toast.makeText(MainActivity.this, "Session Name " + name, Toast.LENGTH_SHORT).show();
+		Toast.makeText(MainActivity.this, "Session Name " + name,
+				Toast.LENGTH_SHORT).show();
 
 		switch (channelState) {
 		case IDLE:
 
-			Toast.makeText(MainActivity.this, "Session Status idle", Toast.LENGTH_SHORT).show();
+			Toast.makeText(MainActivity.this, "Session Status idle",
+					Toast.LENGTH_SHORT).show();
 
 			break;
 		case NAMED:
 
-			Toast.makeText(MainActivity.this, "Session status named" + name, Toast.LENGTH_SHORT).show();
+			Toast.makeText(MainActivity.this, "Session status named" + name,
+					Toast.LENGTH_SHORT).show();
 			break;
 		case BOUND:
 
-			Toast.makeText(MainActivity.this, "Session status bound" + name, Toast.LENGTH_SHORT).show();
+			Toast.makeText(MainActivity.this, "Session status bound" + name,
+					Toast.LENGTH_SHORT).show();
 
 			break;
 		case ADVERTISED:
 
-			Toast.makeText(MainActivity.this, "Session status advertised" + name, Toast.LENGTH_SHORT).show();
+			Toast.makeText(MainActivity.this,
+					"Session status advertised" + name, Toast.LENGTH_SHORT)
+					.show();
 			break;
 		case CONNECTED:
 
-			Toast.makeText(MainActivity.this, "Session status connected", Toast.LENGTH_SHORT).show();
+			Toast.makeText(MainActivity.this, "Session status connected",
+					Toast.LENGTH_SHORT).show();
 
 			break;
 		default:
 
-			Toast.makeText(MainActivity.this, "Session status unknown", Toast.LENGTH_SHORT).show();
+			Toast.makeText(MainActivity.this, "Session status unknown",
+					Toast.LENGTH_SHORT).show();
 
 			break;
 		}
@@ -446,7 +457,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private void updateHistory() {
 
 		String messager = mChatApplication.getHistoryMessage();
-		Toast.makeText(getApplicationContext(), "msg got! - "+messager, Toast.LENGTH_SHORT).show();
+		Toast.makeText(MainActivity.this, "msg got! - " + messager,
+				Toast.LENGTH_SHORT).show();
 
 		preview.setText(messager);
 
@@ -457,12 +469,18 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		} else if (messager.contains(CONTROLLER_CMD_UI_RIGHT)) {
 			appListMove(Direction.LEFT);
 		} else if (messager.contains(CONTROLLER_CMD_UI_OK)) {
-			if(appsListStatus == UIStatus.OPEN){
+			DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+			if (appsListStatus == UIStatus.OPEN) {
 				runApp();
-			}else{
+			} else if (!(drawerLayout.isDrawerOpen(GravityCompat.START) || drawerLayout
+					.isDrawerOpen(GravityCompat.END))) {
+				// Applist will be opened if only if no other views are opened.
+				// (make sure server and client work synchronously)
 				showAppsList();
+			} else {
+				// do nothing
 			}
-			
+
 		} else if (messager.contains(CONTROLLER_CMD_UI_RETURN)) {
 			hideBottomView();
 		} else if (messager.contains(CONTROLLER_CMD_UI_SHOW_BOOKMARK)) {
@@ -473,22 +491,30 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			hideBookmarkView();
 		} else if (messager.contains(CONTROLLER_CMD_UI_HIDE_HISTORY)) {
 			hideHistoryView();
-		} else if (messager.contains(CONTROLLER_CMD_VL)) {
-			int newVl=-1;
-			try{
-				newVl = Integer.parseInt( messager.substring(messager.indexOf(CONTROLLER_CMD_VL) + 8) );
-			}catch(NumberFormatException e){
-				Toast.makeText(getApplicationContext(), e.toString(),Toast.LENGTH_SHORT).show();
+		} else if (messager.contains(CONTROLLER_CMD_VOLUME)) {
+			int newVl = -1;
+			try {
+				newVl = Integer.parseInt(messager.substring(messager
+						.indexOf(CONTROLLER_CMD_VOLUME) + 8));
+			} catch (NumberFormatException e) {
+				Toast.makeText(MainActivity.this, e.toString(),
+						Toast.LENGTH_SHORT).show();
 				return;
 			}
-			Toast.makeText(getApplicationContext(), Integer.toString(newVl), Toast.LENGTH_SHORT).show();
-		}
+			setVolume(newVl);
 
-		/*
-		 * List<String> messages = mChatApplication.getHistory(); for (String
-		 * message : messages) { Toast.makeText(MainActivity.this,
-		 * "History changed!!" + message, Toast.LENGTH_SHORT).show(); }
-		 */
+		} else if (messager.contains(CONTROLLER_CMD_CHANNEL)) {
+			int newCn = -1;
+			try {
+				newCn = Integer.parseInt(messager.substring(messager
+						.indexOf(CONTROLLER_CMD_CHANNEL) + 8));
+			} catch (NumberFormatException e) {
+				Toast.makeText(MainActivity.this, e.toString(),
+						Toast.LENGTH_SHORT).show();
+				return;
+			}
+			setChannel(newCn);
+		}
 
 	}
 
@@ -499,7 +525,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			switch (msg.what) {
 
 			case HANDLE_HISTORY_CHANGED_EVENT: {
-				Log.i("", "mHandler.handleMessage(): HANDLE_HISTORY_CHANGED_EVENT");
+				Log.i("",
+						"mHandler.handleMessage(): HANDLE_HISTORY_CHANGED_EVENT");
 				updateHistory();
 				break;
 			}
@@ -529,22 +556,26 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		String qualifier = (String) arg;
 
 		if (qualifier.equals(MainApplication.APPLICATION_QUIT_EVENT)) {
-			Message message = mHandler.obtainMessage(HANDLE_APPLICATION_QUIT_EVENT);
+			Message message = mHandler
+					.obtainMessage(HANDLE_APPLICATION_QUIT_EVENT);
 			mHandler.sendMessage(message);
 		}
 
 		if (qualifier.equals(MainApplication.HISTORY_CHANGED_EVENT)) {
-			Message message = mHandler.obtainMessage(HANDLE_HISTORY_CHANGED_EVENT);
+			Message message = mHandler
+					.obtainMessage(HANDLE_HISTORY_CHANGED_EVENT);
 			mHandler.sendMessage(message);
 		}
 
 		if (qualifier.equals(MainApplication.HOST_CHANNEL_STATE_CHANGED_EVENT)) {
-			Message message = mHandler.obtainMessage(HANDLE_CHANNEL_STATE_CHANGED_EVENT);
+			Message message = mHandler
+					.obtainMessage(HANDLE_CHANNEL_STATE_CHANGED_EVENT);
 			mHandler.sendMessage(message);
 		}
 
 		if (qualifier.equals(MainApplication.ALLJOYN_ERROR_EVENT)) {
-			Message message = mHandler.obtainMessage(HANDLE_ALLJOYN_ERROR_EVENT);
+			Message message = mHandler
+					.obtainMessage(HANDLE_ALLJOYN_ERROR_EVENT);
 			mHandler.sendMessage(message);
 		}
 	}
@@ -567,41 +598,46 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 																										// wrapper
 
 		View padding = new View(this);
-		appsList.addView(padding, new LinearLayout.LayoutParams(((screenWidth - appIconWidth) / 2), appIconWidth)); // append
-																													// left
-																													// padding
+		appsList.addView(padding, new LinearLayout.LayoutParams(
+				((screenWidth - appIconWidth) / 2), appIconWidth)); // append left padding
 
 		int count = 0;
 		for (ResolveInfo info : apps) {
 			ImageView thisApp = new ImageView(this);
-			thisApp.setImageDrawable(info.activityInfo.loadIcon(getPackageManager())); // setImagerResource用於圖片是R.drawable內容時
+			thisApp.setImageDrawable(info.activityInfo
+					.loadIcon(getPackageManager())); // setImagerResource用於圖片是R.drawable內容時
 			thisApp.setTag("app" + Integer.toString(count));
 
-			appsList.addView(thisApp, new LinearLayout.LayoutParams(appIconWidth, appIconWidth));
+			appsList.addView(thisApp, new LinearLayout.LayoutParams(
+					appIconWidth, appIconWidth));
 			count++;
 		}
 		totalApp = count;
-		Toast.makeText(this, Integer.toString(count), Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, Integer.toString(count), Toast.LENGTH_SHORT)
+				.show();
 
 		// scroll to the initial position
 		appsLayout.postDelayed(new Runnable() { // horizontal scroll view is
-			// buggy and it must be
-			// implemented this way to
-			// "scrollTo" or
-			// "smoothScrollBy"
-			@Override
-			public void run() {
-				// hsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
-				appsLayout.smoothScrollBy(curFocusApp * appIconWidth, 0);
-			}
-		}, 30);
+					// buggy and it must be
+					// implemented this way to
+					// "scrollTo" or
+					// "smoothScrollBy"
+					@Override
+					public void run() {
+						// hsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+						appsLayout
+								.smoothScrollBy(curFocusApp * appIconWidth, 0);
+					}
+				}, 30);
 		appsList.findViewWithTag("app" + Integer.toString(curFocusApp))
-				.startAnimation(AnimationUtils.loadAnimation(this, R.anim.applarge));
+				.startAnimation(
+						AnimationUtils.loadAnimation(this, R.anim.applarge));
 
 		padding = new View(this);
-		appsList.addView(padding, new LinearLayout.LayoutParams(((screenWidth - appIconWidth) / 2), appIconWidth)); // append
-																													// right
-																													// padding
+		appsList.addView(padding, new LinearLayout.LayoutParams(
+				((screenWidth - appIconWidth) / 2), appIconWidth)); // append
+																	// right
+																	// padding
 	}
 
 	private void appListMove(Direction direction) {
@@ -615,8 +651,10 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		final HorizontalScrollView appsLayout = (HorizontalScrollView) findViewById(R.id.appsLayout); // find
 																										// outer
 																										// wrapper
-		final Animation appLarge = AnimationUtils.loadAnimation(this, R.anim.applarge);
-		final Animation appSmall = AnimationUtils.loadAnimation(this, R.anim.appsmall);
+		final Animation appLarge = AnimationUtils.loadAnimation(this,
+				R.anim.applarge);
+		final Animation appSmall = AnimationUtils.loadAnimation(this,
+				R.anim.appsmall);
 
 		if (direction == Direction.LEFT) {
 			if (curFocusApp + 1 >= totalApp) {
@@ -630,15 +668,17 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 													// implemented this way to
 													// "scrollTo" or
 													// "smoothScrollBy"
-				@Override
-				public void run() {
-					// hsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
-					appsLayout.smoothScrollBy(appIconWidth, 0);
-				}
-			}, 30);
+						@Override
+						public void run() {
+							// hsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+							appsLayout.smoothScrollBy(appIconWidth, 0);
+						}
+					}, 30);
 			// icon scale
-			appsList.findViewWithTag("app" + Integer.toString(curFocusApp - 1)).startAnimation(appSmall);
-			appsList.findViewWithTag("app" + Integer.toString(curFocusApp)).startAnimation(appLarge);
+			appsList.findViewWithTag("app" + Integer.toString(curFocusApp - 1))
+					.startAnimation(appSmall);
+			appsList.findViewWithTag("app" + Integer.toString(curFocusApp))
+					.startAnimation(appLarge);
 
 		} else if (direction == Direction.RIGHT) {
 			if (curFocusApp <= 0) {
@@ -652,15 +692,17 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 													// implemented this way to
 													// "scrollTo" or
 													// "smoothScrollBy"
-				@Override
-				public void run() {
-					// hsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
-					appsLayout.smoothScrollBy(-appIconWidth, 0);
-				}
-			}, 30);
+						@Override
+						public void run() {
+							// hsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+							appsLayout.smoothScrollBy(-appIconWidth, 0);
+						}
+					}, 30);
 			// icon scale
-			appsList.findViewWithTag("app" + Integer.toString(curFocusApp + 1)).startAnimation(appSmall);
-			appsList.findViewWithTag("app" + Integer.toString(curFocusApp)).startAnimation(appLarge);
+			appsList.findViewWithTag("app" + Integer.toString(curFocusApp + 1))
+					.startAnimation(appSmall);
+			appsList.findViewWithTag("app" + Integer.toString(curFocusApp))
+					.startAnimation(appLarge);
 
 		} else {
 			Log.d("launcher_main", "undefined direction");
@@ -678,11 +720,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 										// application to run
 		startActivity(intent);
 	}
-	private void showAppsList(){
-		setAppContentView(bottomView);
-	}
-	
-	
+
 	/* responsive UI */
 
 	private void getScreenSize() {
@@ -691,19 +729,19 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		display.getSize(size);
 		screenWidth = size.x;
 	}
-	
-	private void getChannelInfo() throws Exception{
+
+	private void getChannelInfo() throws Exception {
 		String url = "https://droptv.servehttp.com:8443/SmarttvWebServiceApi/GetChannelStatus";
 		URL obj = new URL(url);
 		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 
-		//add reuqest header
+		// add reuqest header
 		con.setRequestMethod("POST");
 		con.setRequestProperty("User-Agent", "Mozilla/5.0");
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
 		String urlParameters = "msoid=1&channelnum=65";
-		
+
 		// Send post request
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
@@ -712,12 +750,15 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-		Toast.makeText(this,"\nSending 'POST' request to URL : " + url, Toast.LENGTH_SHORT).show();
-		Toast.makeText(this,"Post parameters : " + urlParameters, Toast.LENGTH_SHORT).show();
-		Toast.makeText(this,"Response Code : " + responseCode, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "\nSending 'POST' request to URL : " + url,
+				Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "Post parameters : " + urlParameters,
+				Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "Response Code : " + responseCode,
+				Toast.LENGTH_SHORT).show();
 
-		BufferedReader in = new BufferedReader(
-		        new InputStreamReader(con.getInputStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				con.getInputStream()));
 		String inputLine;
 		StringBuffer response = new StringBuffer();
 
@@ -725,12 +766,13 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			response.append(inputLine);
 		}
 		in.close();
-		
-		//print result
-		Toast.makeText(this,"COME ON:"+response.toString(), Toast.LENGTH_SHORT).show();
 
-		
+		// print result
+		Toast.makeText(this, "COME ON:" + response.toString(),
+				Toast.LENGTH_SHORT).show();
+
 	}
+
 	// private boolean tickTock = false;
 	//
 	// private void startClock() {
@@ -750,4 +792,16 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	// }
 	// }, 1000);
 	// }
+
+	/* TV control */
+
+	private void setChannel(int newCn) {
+		Toast.makeText(getApplicationContext(), Integer.toString(newCn),
+				Toast.LENGTH_SHORT).show();
+	}
+
+	private void setVolume(int newVl) {
+		Toast.makeText(getApplicationContext(), Integer.toString(newVl),
+				Toast.LENGTH_SHORT).show();
+	}
 }
