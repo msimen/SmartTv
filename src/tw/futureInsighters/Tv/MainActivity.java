@@ -1,14 +1,20 @@
-package tw.futureInsighters.Tv_bad;
+package tw.futureInsighters.Tv;
 
 import itri.smarttvsdk.activities.HomeAppActivityBase;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import org.allseenaliance.alljoyn.AllJoynService;
 import org.allseenaliance.alljoyn.Observable;
 import org.allseenaliance.alljoyn.Observer;
 
-import android.app.Activity;
+import tw.futureInsighters.Tv.R;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -17,8 +23,10 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.Animation;
@@ -37,22 +45,39 @@ import android.widget.Toast;
  * Created by mimi on 15/3/25.
  */
 public class MainActivity extends HomeAppActivityBase implements Observer {
-	// launcher
+	/* control CMD */
 	private final int appIconWidth = 70;
 	private final String CONTROLLER_CMD_UI_LEFT = "ISTVSgoleft";
 	private final String CONTROLLER_CMD_UI_RIGHT = "ISTVSgoright";
 	private final String CONTROLLER_CMD_UI_OK = "ISTVSok";
+	private final String CONTROLLER_CMD_UI_RETURN = "ISTVSreturn";
+	private final String CONTROLLER_CMD_UI_SHOW_HISTORY = "ISTVSsh";
+	private final String CONTROLLER_CMD_UI_SHOW_BOOKMARK = "ISTVSsb";
+	private final String CONTROLLER_CMD_UI_HIDE_HISTORY = "ISTVShh";
+	private final String CONTROLLER_CMD_UI_HIDE_BOOKMARK = "ISTVShb";
+	private final String CONTROLLER_CMD_VL = "ISTVSvl";
 
 	private enum Direction {
 		LEFT, RIGHT
 	};
+	private enum UIStatus{
+		OPEN, CLOSED
+	}
 
+	/* App List (the same with launcher */
 	private List<ResolveInfo> apps;
 	private int totalApp;
 
 	private boolean scrollAllowed = true;
 	private int curFocusApp = 5;
 	private int screenWidth;
+	
+	private UIStatus appsListStatus = UIStatus.CLOSED;
+	
+	/* views */
+	private BottomView bottomView;
+	private BookmarkView bookmarkView;
+	private HistoryView historyView;
 
 	// alljoyn
 	private Button join;
@@ -69,18 +94,34 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private static final int HANDLE_CHANNEL_STATE_CHANGED_EVENT = 1;
 	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 2;
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		BottomView bv = new BottomView(this);
-		this.setAppContentView(bv);
+		
+		historyView = new HistoryView(this);
+		bottomView = new BottomView(this);
+		showAppsList();
+		//startHistoryView();
+//		try{
+//			getChannelInfo();
+//		}catch(Exception e){
+//			
+//		}
+		//startBookmarkView();
 		// FullView fv = new FullView(this);
 		// this.setAppContentView(fv);
-		Toast.makeText(this, "Channel:" + this.getChannelNumber(), Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "Channel:" + this.getChannelNumber(), Toast.LENGTH_SHORT).show();
 
 		// launcher
 		getScreenSize();
 		loadApps();
+		
+//		new android.os.Handler().postDelayed(new Runnable() {
+//			public void run() {
+//				
+//			}
+//		}, 4000);
 
 		// Alljoyn
 		start = (Button) findViewById(R.id.startchannel);
@@ -287,56 +328,71 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		});
 	}
 
+	/* view control */
 	private void startRv() {
 		RightView rv = new RightView(getApplicationContext());
 		this.setAppContentView(rv);
 	}
-
 	private void startBookmarkView() {
-		BookmarkView fv = new BookmarkView(this, 1);
+		BookmarkView fv = new BookmarkView(this);
 		this.setAppContentView(fv);
 	}
-
 	private void startHistoryView() {
-		HistoryView fv = new HistoryView(this, 1);
+		HistoryView fv = new HistoryView(this);
 		this.setAppContentView(fv);
 	}
+	
+	private void hideBottomView(){
+		final HorizontalScrollView appsLayout = (HorizontalScrollView) findViewById(R.id.appsLayout);
+		appsLayout.animate().translationY(450);
+	}
+	private void hideBookmarkView(){
+		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-	// IR control handler
+		drawerLayout.closeDrawer(Gravity.START);
+	}
+	private void hideHistoryView(){
+		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+		drawerLayout.closeDrawer(Gravity.END);
+	}
+	
+
+	/* IR control handler */
 
 	@Override
 	protected void onOtherKey(int keyCode) {
-		Toast.makeText(this, "stepbystep_IR_Other:" + keyCode, Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "stepbystep_IR_Other:" + keyCode, Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onNumberKey(int number) {
-		Toast.makeText(this, "stepbystep_IR_Number:" + number, Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "stepbystep_IR_Number:" + number, Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onUpKey() {
-		Toast.makeText(this, "stepbystep_IR_Up", Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "stepbystep_IR_Up", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onDownKey() {
-		Toast.makeText(this, "stepbystep_IR_Down", Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "stepbystep_IR_Down", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onLeftKey() {
-		Toast.makeText(this, "stepbystep_IR_Left", Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "stepbystep_IR_Left", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onRightKey() {
-		Toast.makeText(this, "stepbystep_IR_Right", Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "stepbystep_IR_Right", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onOkKey() {
-		Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_SHORT).show();
 	}
 
 	private void updateChannelState() {
@@ -390,6 +446,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private void updateHistory() {
 
 		String messager = mChatApplication.getHistoryMessage();
+		Toast.makeText(getApplicationContext(), "msg got! - "+messager, Toast.LENGTH_SHORT).show();
 
 		preview.setText(messager);
 
@@ -400,7 +457,31 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		} else if (messager.contains(CONTROLLER_CMD_UI_RIGHT)) {
 			appListMove(Direction.LEFT);
 		} else if (messager.contains(CONTROLLER_CMD_UI_OK)) {
-			runApp();
+			if(appsListStatus == UIStatus.OPEN){
+				runApp();
+			}else{
+				showAppsList();
+			}
+			
+		} else if (messager.contains(CONTROLLER_CMD_UI_RETURN)) {
+			hideBottomView();
+		} else if (messager.contains(CONTROLLER_CMD_UI_SHOW_BOOKMARK)) {
+			startBookmarkView();
+		} else if (messager.contains(CONTROLLER_CMD_UI_SHOW_HISTORY)) {
+			startHistoryView();
+		} else if (messager.contains(CONTROLLER_CMD_UI_HIDE_BOOKMARK)) {
+			hideBookmarkView();
+		} else if (messager.contains(CONTROLLER_CMD_UI_HIDE_HISTORY)) {
+			hideHistoryView();
+		} else if (messager.contains(CONTROLLER_CMD_VL)) {
+			int newVl=-1;
+			try{
+				newVl = Integer.parseInt( messager.substring(messager.indexOf(CONTROLLER_CMD_VL) + 8) );
+			}catch(NumberFormatException e){
+				Toast.makeText(getApplicationContext(), e.toString(),Toast.LENGTH_SHORT).show();
+				return;
+			}
+			Toast.makeText(getApplicationContext(), Integer.toString(newVl), Toast.LENGTH_SHORT).show();
 		}
 
 		/*
@@ -468,7 +549,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		}
 	}
 
-	// launcher
+	/* AppsList */
 
 	private void loadApps() {
 		Intent getAppsIntent = new Intent(Intent.ACTION_MAIN, null);
@@ -500,7 +581,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			count++;
 		}
 		totalApp = count;
-		Toast.makeText(this, Integer.toString(count), Toast.LENGTH_LONG).show();
+		Toast.makeText(this, Integer.toString(count), Toast.LENGTH_SHORT).show();
 
 		// scroll to the initial position
 		appsLayout.postDelayed(new Runnable() { // horizontal scroll view is
@@ -521,7 +602,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		appsList.addView(padding, new LinearLayout.LayoutParams(((screenWidth - appIconWidth) / 2), appIconWidth)); // append
 																													// right
 																													// padding
-
 	}
 
 	private void appListMove(Direction direction) {
@@ -598,6 +678,12 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 										// application to run
 		startActivity(intent);
 	}
+	private void showAppsList(){
+		setAppContentView(bottomView);
+	}
+	
+	
+	/* responsive UI */
 
 	private void getScreenSize() {
 		Display display = getWindowManager().getDefaultDisplay();
@@ -605,7 +691,46 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		display.getSize(size);
 		screenWidth = size.x;
 	}
+	
+	private void getChannelInfo() throws Exception{
+		String url = "https://droptv.servehttp.com:8443/SmarttvWebServiceApi/GetChannelStatus";
+		URL obj = new URL(url);
+		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 
+		//add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", "Mozilla/5.0");
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+		String urlParameters = "msoid=1&channelnum=65";
+		
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		int responseCode = con.getResponseCode();
+		Toast.makeText(this,"\nSending 'POST' request to URL : " + url, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this,"Post parameters : " + urlParameters, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this,"Response Code : " + responseCode, Toast.LENGTH_SHORT).show();
+
+		BufferedReader in = new BufferedReader(
+		        new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+		
+		//print result
+		Toast.makeText(this,"COME ON:"+response.toString(), Toast.LENGTH_SHORT).show();
+
+		
+	}
 	// private boolean tickTock = false;
 	//
 	// private void startClock() {

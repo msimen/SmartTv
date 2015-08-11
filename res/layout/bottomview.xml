@@ -25,32 +25,32 @@
 
     <Button
         android:id="@+id/startfv"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:text="Send Data" />
 
     <Button
         android:id="@+id/startchannel"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:text="Start Session" />
 
     <Button
         android:id="@+id/stopchannel"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:text="Stop Session" />
 
     <Button
         android:id="@+id/joinchannel"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:text="Join Session" />
 
     <Button
         android:id="@+id/sendjson"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:text="Send Data" />
 
     <Button

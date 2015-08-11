@@ -1,5 +1,6 @@
-package tw.futureInsighters.Tv_bad;
+package tw.futureInsighters.Tv;
 
+import tw.futureInsighters.Tv.R;
 import itri.smarttvsdk.views.HomeAppFullView;
 import android.content.Context;
 import android.graphics.Color;
@@ -15,10 +16,6 @@ public class HistoryView extends HomeAppFullView {
 	private DrawerLayout drawerLayout;
 
 	public HistoryView(Context context) {
-		super(context);
-	}
-
-	public HistoryView(Context context, int mode) {
 		super(context);
 	}
 

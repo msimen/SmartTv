@@ -1,4 +1,4 @@
-package tw.futureInsighters.Tv_bad;
+package tw.futureInsighters.Tv;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import itri.smarttvsdk.views.HomeAppLeftView;
 import itri.smarttvsdk.views.HomeAppRightView;
-import tw.futureInsighters.Tv_bad.R;
+import tw.futureInsighters.Tv.R;
 
 /**
  * Created by mimi on 14/12/30.

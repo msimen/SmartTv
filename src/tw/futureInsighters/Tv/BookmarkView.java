@@ -1,5 +1,6 @@
-package tw.futureInsighters.Tv_bad;
+package tw.futureInsighters.Tv;
 
+import tw.futureInsighters.Tv.R;
 import itri.smarttvsdk.views.HomeAppFullView;
 import android.content.Context;
 import android.graphics.Color;

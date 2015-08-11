@@ -1,10 +1,10 @@
-package tw.futureInsighters.Tv_bad;
+package tw.futureInsighters.Tv;
 
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.util.Log;
-import tw.futureInsighters.Tv_bad.MainApplication;
+import tw.futureInsighters.Tv.MainApplication;
 
 import java.util.List;
 import java.util.ArrayList;

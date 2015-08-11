@@ -63,7 +63,7 @@ import itri.smarttvsdk.views.HomeAppBottomView;
 import itri.smarttvsdk.views.HomeAppFullView;
 import itri.smarttvsdk.views.HomeAppRightView;
 import itri.smarttvsdk.views.HomeAppViewBase;
-import tw.futureInsighters.Tv_bad.R;
+import tw.futureInsighters.Tv.R;
 
 /**
  * Created by mimi on 14/12/29.

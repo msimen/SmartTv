@@ -60,7 +60,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:background="#00000000"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:padding="5dp" >
 
             <TextView
@@ -77,11 +77,6 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/bookmark_add" />
 
-            <ListView
-                android:id="@+id/bookmarklist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#00000000" />
         </LinearLayout>
 
         <LinearLayout
@@ -90,28 +85,23 @@
             android:layout_height="match_parent"
             android:layout_gravity="end"
             android:background="#00000000"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:padding="5dp" >
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:text="History"
-                android:textColor="#FFF"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
             <ImageView
+                android:id="@+id/history_img"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
                 android:src="@drawable/history_icon" />
 
-            <ListView
-                android:id="@+id/historylist"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#00000000" />
+                android:gravity="end"
+                android:text="History"
+                android:textColor="#FFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </android.support.v4.widget.DrawerLayout>
 

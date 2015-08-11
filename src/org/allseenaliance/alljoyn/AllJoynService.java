@@ -39,9 +39,9 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.util.Log;
-import tw.futureInsighters.Tv_bad.MainActivity;
-import tw.futureInsighters.Tv_bad.MainApplication;
-import tw.futureInsighters.Tv_bad.R;
+import tw.futureInsighters.Tv.MainActivity;
+import tw.futureInsighters.Tv.MainApplication;
+import tw.futureInsighters.Tv.R;
 
 public class AllJoynService extends Service implements Observer {
 	private static final String TAG = "chat.AllJoynService";

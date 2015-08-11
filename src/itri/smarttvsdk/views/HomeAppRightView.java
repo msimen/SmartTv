@@ -5,7 +5,7 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
 
-import tw.futureInsighters.Tv_bad.R;
+import tw.futureInsighters.Tv.R;
 
 
 /**

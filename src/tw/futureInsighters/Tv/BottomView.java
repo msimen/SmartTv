@@ -1,8 +1,9 @@
-package tw.futureInsighters.Tv_bad;
+package tw.futureInsighters.Tv;
 
 
 import java.util.List;
 
+import tw.futureInsighters.Tv.R;
 import itri.smarttvsdk.views.HomeAppBottomView;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import android.widget.Toast;
  * Created by mimi on 14/12/30.
  */
 public class BottomView extends HomeAppBottomView {
+	private HorizontalScrollView appsLayout;
 	
     public BottomView(Context context) {
         super(context);
@@ -40,6 +42,14 @@ public class BottomView extends HomeAppBottomView {
         View content = this.inflate(getContext(), R.layout.bottomview, this);
         this.setBackgroundColor(Color.TRANSPARENT);
         
+        new android.os.Handler().postDelayed(new Runnable() {
+			public void run() {
+				appsLayout = (HorizontalScrollView) findViewById(R.id.appsLayout);
+				appsLayout.animate().translationY(450);
+				appsLayout.animate().translationY(0);
+			}
+		}, 700);
+        
     }
-
+    
 }
