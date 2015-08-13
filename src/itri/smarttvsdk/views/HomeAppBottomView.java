@@ -33,7 +33,6 @@ public class HomeAppBottomView extends HomeAppViewBase {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.setMeasuredDimension(this.screen_width, ((int) (this.screen_height -
-                this.screen_height * 0.5)));
+        this.setMeasuredDimension(this.screen_width, ((int) (270)));
     }
 }

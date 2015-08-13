@@ -32,25 +32,7 @@
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin" >
 
-                <ImageView
-                    android:id="@+id/channel_img"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/bbc" />
-
-                <TextView
-                    android:id="@+id/channel_txt"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_marginLeft="15dp"
-                    android:layout_toRightOf="@id/channel_img"
-                    android:text="BBC"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                
             </RelativeLayout>
         </LinearLayout>
 
@@ -64,7 +46,7 @@
             android:padding="5dp" >
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Bookmark"
                 android:textColor="#FFF"
@@ -73,8 +55,8 @@
 
             <ImageView
                 android:id="@+id/bookmark_img"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
                 android:src="@drawable/bookmark_add" />
         </LinearLayout>
 
@@ -94,7 +76,7 @@
                 android:src="@drawable/history_icon" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:text="History"

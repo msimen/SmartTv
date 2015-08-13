@@ -42,7 +42,7 @@ import android.widget.Toast;
  */
 public class MainActivity extends HomeAppActivityBase implements Observer {
 	/* control CMD */
-	private final int appIconWidth = 70;
+	private final int appIconWidth = 100;
 	/* part1: client to TV CMD */
 	private final String CONTROLLER_CMD_UI_LEFT = "ISTVSgoleft";
 	private final String CONTROLLER_CMD_UI_RIGHT = "ISTVSgoright";
@@ -91,16 +91,16 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	// private UIStatus bookmarkViewStatus = UIStatus.CLOSED;
 	// private UIStatus historyViewStatus = UIStatus.CLOSED;
 
-	// alljoyn
+	/* alljoyn */
 	private Button join;
 	private Button stop;
 	private Button start;
 	private Button leave;
-	private Button sendjson;
+	//private Button sendjson;
 
 	private MainApplication mChatApplication = null;
-	private TextView preview;
-	private EditText edit;
+	//private TextView preview;
+	//private EditText edit;
 
 	private static final int HANDLE_APPLICATION_QUIT_EVENT = 0;
 	private static final int HANDLE_CHANNEL_STATE_CHANGED_EVENT = 1;
@@ -128,34 +128,30 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		// }, 4000);
 
 		// Alljoyn
-		start = (Button) findViewById(R.id.startchannel);
-		stop = (Button) findViewById(R.id.stopchannel);
-		join = (Button) findViewById(R.id.joinchannel);
+		start = new Button(getApplicationContext());
+		stop = new Button(getApplicationContext());
+		join = new Button(getApplicationContext());
 
-		preview = (TextView) findViewById(R.id.textpreview);
-		edit = (EditText) findViewById(R.id.editpreview);
 
-		sendjson = (Button) findViewById(R.id.sendjson);
-
-		leave = (Button) findViewById(R.id.leavechannel);
+		leave = new Button(getApplicationContext());
 
 		stop.setEnabled(false);
-		sendjson.setEnabled(false);
+		//sendjson.setEnabled(false);
 		leave.setEnabled(false);
 
-		sendjson.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-
-				String s = edit.getText().toString() + "";
-
-				mChatApplication.newLocalUserMessage(s);
-
-				edit.setText("");
-
-			}
-		});
+//		sendjson.setOnClickListener(new OnClickListener() {
+//
+//			@Override
+//			public void onClick(View arg0) {
+//
+//				String s = edit.getText().toString() + "";
+//
+//				mChatApplication.newLocalUserMessage(s);
+//
+//				edit.setText("");
+//
+//			}
+//		});
 
 		// Start channel
 		start.setOnClickListener(new OnClickListener() {
@@ -191,7 +187,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				stop.setEnabled(false);
 				start.setEnabled(true);
 				leave.setEnabled(false);
-				sendjson.setEnabled(false);
+				//sendjson.setEnabled(false);
 
 			}
 		});
@@ -237,14 +233,14 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				if (!found) {
 					new android.os.Handler().postDelayed(new Runnable() {
 						public void run() {
-							Toast.makeText(getApplicationContext(), "bad",
+							Toast.makeText(getApplicationContext(), "Initialization failed. Retrying...",
 									Toast.LENGTH_SHORT).show();
 							join.performClick();
 						}
-					}, 6000);
+					}, 1000);
 					return;
 				}
-				Toast.makeText(getApplicationContext(), "good",
+				Toast.makeText(getApplicationContext(), "Initialized. Have a good day!",
 						Toast.LENGTH_SHORT).show();
 
 				// Set channel name and join
@@ -254,7 +250,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				start.setEnabled(false);
 				stop.setEnabled(false);
 				join.setEnabled(false);
-				sendjson.setEnabled(true);
+				//sendjson.setEnabled(true);
 				leave.setEnabled(true);
 
 				Button cancel = (Button) dialog
@@ -284,7 +280,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				mChatApplication.useLeaveChannel();
 				mChatApplication.useSetChannelName("Not set");
 				leave.setEnabled(false);
-				sendjson.setEnabled(false);
+				//sendjson.setEnabled(false);
 
 				// start.setEnabled(true);
 				stop.setEnabled(true);
@@ -447,7 +443,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		Toast.makeText(MainActivity.this, "msg got! - " + messager,
 				Toast.LENGTH_SHORT).show();
 
-		preview.setText(messager);
+		//preview.setText(messager);
 
 		// TV Control Command Handler Goes Here
 

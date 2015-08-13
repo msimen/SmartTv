@@ -43,6 +43,6 @@ public class BookmarkView extends HomeAppFullView {
 			public void run() {
 				drawerLayout.openDrawer(Gravity.START);
 			}
-		}, 500);
+		}, 300);
 	}
 }
