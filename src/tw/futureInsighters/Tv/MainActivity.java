@@ -66,16 +66,16 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private enum UIStatus {
 		OPEN, CLOSED
 	}
-	
-	/* channel info*/
+
+	/* channel info */
 	private ChannelInfo curChannelInfo;
-	private class ChannelInfo{
+
+	private class ChannelInfo {
 		String name = "No Channel Name";
 		int number = 0;
 		String intro = "No Introduction";
 		Boolean isAds = false;
 	}
-	
 
 	/* App List (the same with launcher */
 	private List<ResolveInfo> apps;
@@ -175,11 +175,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		});
 
 		// Simulate click start button
-		new android.os.Handler().postDelayed(new Runnable() {
-			public void run() {
-				start.performClick();
-			}
-		}, 3000);
+		// new android.os.Handler().postDelayed(new Runnable() {
+		// public void run() {
+		// start.performClick();
+		// }
+		// }, 3000);
 
 		// Stop server (Useless)
 		stop.setOnClickListener(new OnClickListener() {
@@ -381,7 +381,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	protected void onOkKey() {
 		Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_SHORT).show();
 	}
-	
+
 	/* Alljoyn */
 
 	private void updateChannelState() {
@@ -452,9 +452,13 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		// TV Control Command Handler Goes Here
 
 		if (messager.contains(CONTROLLER_CMD_UI_LEFT)) {
-			appListMove(Direction.RIGHT);
+			if (appsListStatus == UIStatus.OPEN) {
+				appListMove(Direction.RIGHT);
+			}
 		} else if (messager.contains(CONTROLLER_CMD_UI_RIGHT)) {
-			appListMove(Direction.LEFT);
+			if (appsListStatus == UIStatus.OPEN) {
+				appListMove(Direction.LEFT);
+			}
 		} else if (messager.contains(CONTROLLER_CMD_UI_OK)) {
 			DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 			if (appsListStatus == UIStatus.OPEN) {
@@ -504,16 +508,17 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		} else if (messager.contains(CONTROLLER_CMD_GET_CUR_CHANNEL)) {
 			// get information from server
 			getChannelInfo();
-			
+
 			// prepare information
 			String name = curChannelInfo.name;
 			int number = curChannelInfo.number;
 			String intro = curChannelInfo.intro;
 			Boolean isAds = curChannelInfo.isAds;
-			
+
 			// pack the message and response to client
 			String response = TV_RESPONSE_CHANNEL_INFO + " --" + number
-					+ " ---" + name + " ----" + intro + " -----" + String.valueOf(isAds);
+					+ " ---" + name + " ----" + intro + " -----"
+					+ String.valueOf(isAds);
 			mChatApplication.newLocalUserMessage(response);
 
 		}
@@ -733,41 +738,49 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		display.getSize(size);
 		screenWidth = size.x;
 	}
-	
-	/* channel Info*/
-	
+
+	/* channel Info */
+
 	/* get channel info from remote server (ITRI) */
 
 	private void getChannelInfo() {
 		String result = "nothing!";
 		HttpsRequest https = new HttpsRequest();
-		try{
+		try {
 			result = https.execute().get();
-		}catch(Exception e){
+		} catch (Exception e) {
 			result = e.toString();
-			Toast.makeText(getApplicationContext(), "Something went wrong! Please check your Internet connection", Toast.LENGTH_SHORT).show();
-			Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-			return ;
+			Toast.makeText(
+					getApplicationContext(),
+					"Something went wrong! Please check your Internet connection",
+					Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT)
+					.show();
+			return;
 		}
 		JSONObject JSONResult;
-		try{
+		try {
 			JSONResult = new JSONObject(result);
-			//String responseCode = JSONResult.getString("responsecode");
+			// String responseCode = JSONResult.getString("responsecode");
 			String channelName = JSONResult.getString("channelname");
-			//Boolean isProgram = JSONResult.getBoolean("isprogram");
+			// Boolean isProgram = JSONResult.getBoolean("isprogram");
 			Boolean isAds = JSONResult.getBoolean("isads");
 			curChannelInfo.name = channelName;
 			curChannelInfo.intro = "No Intro from server!";
 			curChannelInfo.isAds = isAds;
-		}catch(JSONException e){
-			Toast.makeText(getApplicationContext(), "Something went wrong! Please check your Internet connection", Toast.LENGTH_SHORT).show();
-			Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
-			return ;
+		} catch (JSONException e) {
+			Toast.makeText(
+					getApplicationContext(),
+					"Something went wrong! Please check your Internet connection",
+					Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(), e.toString(),
+					Toast.LENGTH_SHORT).show();
+			return;
 		}
 	}
-	
-	/* get the current channel that is playing (from SDK)*/
-	private void curChannel(){
+
+	/* get the current channel that is playing (from SDK) */
+	private void curChannel() {
 		// Not done yet
 	}
 
