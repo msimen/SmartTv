@@ -270,7 +270,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			public void run() {
 				join.performClick();
 			}
-		}, 6000);
+		}, 3000);
 
 		leave.setOnClickListener(new OnClickListener() {
 
