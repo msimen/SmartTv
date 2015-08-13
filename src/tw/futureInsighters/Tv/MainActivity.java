@@ -2,17 +2,13 @@ package tw.futureInsighters.Tv;
 
 import itri.smarttvsdk.activities.HomeAppActivityBase;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.List;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import org.allseenaliance.alljoyn.AllJoynService;
 import org.allseenaliance.alljoyn.Observable;
 import org.allseenaliance.alljoyn.Observer;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Dialog;
 import android.content.ComponentName;
@@ -47,6 +43,7 @@ import android.widget.Toast;
 public class MainActivity extends HomeAppActivityBase implements Observer {
 	/* control CMD */
 	private final int appIconWidth = 70;
+	/* part1: client to TV CMD */
 	private final String CONTROLLER_CMD_UI_LEFT = "ISTVSgoleft";
 	private final String CONTROLLER_CMD_UI_RIGHT = "ISTVSgoright";
 	private final String CONTROLLER_CMD_UI_OK = "ISTVSok";
@@ -57,6 +54,10 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private final String CONTROLLER_CMD_UI_HIDE_BOOKMARK = "ISTVShb";
 	private final String CONTROLLER_CMD_VOLUME = "ISTVSvl";
 	private final String CONTROLLER_CMD_CHANNEL = "ISTVScn";
+	private final String CONTROLLER_CMD_GET_CUR_CHANNEL = "ISTVScurchannelinfo";
+	/* part2: TV to client CMD */
+	private final String TV_RESPONSE_CHANNEL = "SVTSIcurchannel";
+	private final String TV_RESPONSE_CHANNEL_INFO = "SVTSIcurchannelinfo";
 
 	private enum Direction {
 		LEFT, RIGHT
@@ -65,6 +66,16 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private enum UIStatus {
 		OPEN, CLOSED
 	}
+	
+	/* channel info*/
+	private ChannelInfo curChannelInfo;
+	private class ChannelInfo{
+		String name = "No Channel Name";
+		int number = 0;
+		String intro = "No Introduction";
+		Boolean isAds = false;
+	}
+	
 
 	/* App List (the same with launcher */
 	private List<ResolveInfo> apps;
@@ -99,11 +110,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		// try{
-		// getChannelInfo();
-		// }catch(Exception e){
-		//
-		// }
+		/* channel info */
+		curChannelInfo = new ChannelInfo();
 
 		Toast.makeText(this, "Channel:" + this.getChannelNumber(),
 				Toast.LENGTH_SHORT).show();
@@ -249,28 +257,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				sendjson.setEnabled(true);
 				leave.setEnabled(true);
 
-				// dialog.dismiss();
-
-				// channelList.setOnItemClickListener(new
-				// ListView.OnItemClickListener() {
-				// public void onItemClick(AdapterView<?> parent, View view, int
-				// position, long id) {
-				// String name =
-				// channelList.getItemAtPosition(position).toString();
-				// mChatApplication.useSetChannelName(name);
-				// mChatApplication.useJoinChannel();
-				//
-				//
-				// start.setEnabled(false);
-				// stop.setEnabled(false);
-				// join.setEnabled(false);
-				// sendjson.setEnabled(true);
-				// leave.setEnabled(true);
-				//
-				// dialog.dismiss();
-				// }
-				// });
-
 				Button cancel = (Button) dialog
 						.findViewById(R.id.useJoinCancel);
 				cancel.setOnClickListener(new View.OnClickListener() {
@@ -280,7 +266,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 					}
 				});
 
-				// dialog.show();
 			}
 		});
 
@@ -396,6 +381,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	protected void onOkKey() {
 		Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_SHORT).show();
 	}
+	
+	/* Alljoyn */
 
 	private void updateChannelState() {
 		AllJoynService.HostChannelState channelState = mChatApplication
@@ -514,6 +501,21 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 				return;
 			}
 			setChannel(newCn);
+		} else if (messager.contains(CONTROLLER_CMD_GET_CUR_CHANNEL)) {
+			// get information from server
+			getChannelInfo();
+			
+			// prepare information
+			String name = curChannelInfo.name;
+			int number = curChannelInfo.number;
+			String intro = curChannelInfo.intro;
+			Boolean isAds = curChannelInfo.isAds;
+			
+			// pack the message and response to client
+			String response = TV_RESPONSE_CHANNEL_INFO + " --" + number
+					+ " ---" + name + " ----" + intro + " -----" + String.valueOf(isAds);
+			mChatApplication.newLocalUserMessage(response);
+
 		}
 
 	}
@@ -599,7 +601,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 
 		View padding = new View(this);
 		appsList.addView(padding, new LinearLayout.LayoutParams(
-				((screenWidth - appIconWidth) / 2), appIconWidth)); // append left padding
+				((screenWidth - appIconWidth) / 2), appIconWidth)); // append
+																	// left
+																	// padding
 
 		int count = 0;
 		for (ResolveInfo info : apps) {
@@ -729,48 +733,42 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		display.getSize(size);
 		screenWidth = size.x;
 	}
+	
+	/* channel Info*/
+	
+	/* get channel info from remote server (ITRI) */
 
-	private void getChannelInfo() throws Exception {
-		String url = "https://droptv.servehttp.com:8443/SmarttvWebServiceApi/GetChannelStatus";
-		URL obj = new URL(url);
-		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
-
-		// add reuqest header
-		con.setRequestMethod("POST");
-		con.setRequestProperty("User-Agent", "Mozilla/5.0");
-		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-
-		String urlParameters = "msoid=1&channelnum=65";
-
-		// Send post request
-		con.setDoOutput(true);
-		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(urlParameters);
-		wr.flush();
-		wr.close();
-
-		int responseCode = con.getResponseCode();
-		Toast.makeText(this, "\nSending 'POST' request to URL : " + url,
-				Toast.LENGTH_SHORT).show();
-		Toast.makeText(this, "Post parameters : " + urlParameters,
-				Toast.LENGTH_SHORT).show();
-		Toast.makeText(this, "Response Code : " + responseCode,
-				Toast.LENGTH_SHORT).show();
-
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				con.getInputStream()));
-		String inputLine;
-		StringBuffer response = new StringBuffer();
-
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
+	private void getChannelInfo() {
+		String result = "nothing!";
+		HttpsRequest https = new HttpsRequest();
+		try{
+			result = https.execute().get();
+		}catch(Exception e){
+			result = e.toString();
+			Toast.makeText(getApplicationContext(), "Something went wrong! Please check your Internet connection", Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+			return ;
 		}
-		in.close();
-
-		// print result
-		Toast.makeText(this, "COME ON:" + response.toString(),
-				Toast.LENGTH_SHORT).show();
-
+		JSONObject JSONResult;
+		try{
+			JSONResult = new JSONObject(result);
+			//String responseCode = JSONResult.getString("responsecode");
+			String channelName = JSONResult.getString("channelname");
+			//Boolean isProgram = JSONResult.getBoolean("isprogram");
+			Boolean isAds = JSONResult.getBoolean("isads");
+			curChannelInfo.name = channelName;
+			curChannelInfo.intro = "No Intro from server!";
+			curChannelInfo.isAds = isAds;
+		}catch(JSONException e){
+			Toast.makeText(getApplicationContext(), "Something went wrong! Please check your Internet connection", Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+			return ;
+		}
+	}
+	
+	/* get the current channel that is playing (from SDK)*/
+	private void curChannel(){
+		// Not done yet
 	}
 
 	// private boolean tickTock = false;
