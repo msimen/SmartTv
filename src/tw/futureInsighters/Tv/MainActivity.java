@@ -55,9 +55,14 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private final String CONTROLLER_CMD_VOLUME = "ISTVSvl";
 	private final String CONTROLLER_CMD_CHANNEL = "ISTVScn";
 	private final String CONTROLLER_CMD_GET_CUR_CHANNEL = "ISTVScurchannelinfo";
+	private final String CONTROLLER_CMD_HOME = "ISTVShome";
+	final private String CONTROLLER_NOTIFICATION_SYSNOTI = "ISTVSsysnoti";
 	/* part2: TV to client CMD */
 	private final String TV_RESPONSE_CHANNEL = "SVTSIcurchannel";
 	private final String TV_RESPONSE_CHANNEL_INFO = "SVTSIcurchannelinfo";
+	private final String TV_RESPONSE_APPSLISTON = "SVTSIappsliston";
+	private final String TV_RESPONSE_APPSLISTOFF = "SVTSIappslistoff";
+	
 
 	private enum Direction {
 		LEFT, RIGHT
@@ -109,7 +114,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		/* get alljoyn service */
+		mChatApplication = (MainApplication) getApplication();
 
+		
+		
 		/* channel info */
 		curChannelInfo = new ChannelInfo();
 
@@ -118,8 +127,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 
 		/* app list initialize */
 		getScreenSize();
-		// loadApps();
 		showAppsList();
+
+		loadApps();
+		
+//		startNotificationView();
 
 		// new android.os.Handler().postDelayed(new Runnable() {
 		// public void run() {
@@ -289,8 +301,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			}
 		});
 
-		mChatApplication = (MainApplication) getApplication();
-		mChatApplication.checkin();
+				mChatApplication.checkin();
 
 		// updateChannelState();
 
@@ -306,11 +317,15 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		BottomView bv = new BottomView(this);
 		setAppContentView(bv);
 		loadApps();
+		
+		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTON);
+		
 	}
 
 	private void startBookmarkView() {
 		// bookmarkViewStatus = UIStatus.OPEN;
 		appsListStatus = UIStatus.CLOSED;
+		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTOFF);
 		BookmarkView fv = new BookmarkView(this);
 		this.setAppContentView(fv);
 	}
@@ -318,8 +333,19 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private void startHistoryView() {
 		// historyViewStatus = UIStatus.OPEN;
 		appsListStatus = UIStatus.CLOSED;
+		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTOFF);
 		HistoryView fv = new HistoryView(this);
 		this.setAppContentView(fv);
+	}
+	
+	private void startNotificationView(String msg){
+		appsListStatus = UIStatus.CLOSED;
+		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTOFF);
+		NotificationView nv = new NotificationView(this);
+		this.setAppContentView(nv);
+		
+		final TextView notificationText = (TextView) findViewById(R.id.notificationText);
+		notificationText.setText(msg);
 	}
 
 	private void hideBottomView() {
@@ -337,6 +363,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	private void hideHistoryView() {
 		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerLayout.closeDrawer(Gravity.END);
+	}
+	
+	@Override
+	protected void onDestroy(){
+		super.onDestroy();
 	}
 
 	/* IR control handler */
@@ -482,7 +513,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			int newVl = -1;
 			try {
 				newVl = Integer.parseInt(messager.substring(messager
-						.indexOf(CONTROLLER_CMD_VOLUME) + 8));
+						.indexOf(CONTROLLER_CMD_VOLUME) + 9));
 			} catch (NumberFormatException e) {
 				Toast.makeText(MainActivity.this, e.toString(),
 						Toast.LENGTH_SHORT).show();
@@ -494,7 +525,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			int newCn = -1;
 			try {
 				newCn = Integer.parseInt(messager.substring(messager
-						.indexOf(CONTROLLER_CMD_CHANNEL) + 8));
+						.indexOf(CONTROLLER_CMD_CHANNEL) + 9));
 			} catch (NumberFormatException e) {
 				Toast.makeText(MainActivity.this, e.toString(),
 						Toast.LENGTH_SHORT).show();
@@ -517,6 +548,10 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 					+ String.valueOf(isAds);
 			mChatApplication.newLocalUserMessage(response);
 
+		} else if (messager.contains(CONTROLLER_CMD_HOME)){
+			backToHome();
+		} else if (messager.contains(CONTROLLER_NOTIFICATION_SYSNOTI)){
+			startNotificationView( messager.substring( messager.indexOf( CONTROLLER_NOTIFICATION_SYSNOTI + " -") + 14 ) );
 		}
 
 	}
@@ -776,7 +811,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	}
 
 	/* get the current channel that is playing (from SDK) */
-	private void curChannel() {
+	
+	private void getCurChannel() {
 		// Not done yet
 	}
 
@@ -811,4 +847,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 		Toast.makeText(getApplicationContext(), Integer.toString(newVl),
 				Toast.LENGTH_SHORT).show();
 	}
+	
+	/* go back to launcher */
+	private void backToHome(){
+		System.exit(0);
+	    this.onDestroy();
+	}
+	
 }
