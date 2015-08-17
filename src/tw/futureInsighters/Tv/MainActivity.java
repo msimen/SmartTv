@@ -12,9 +12,11 @@ import org.json.JSONObject;
 
 import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -29,7 +31,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -513,7 +514,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 			int newVl = -1;
 			try {
 				newVl = Integer.parseInt(messager.substring(messager
-						.indexOf(CONTROLLER_CMD_VOLUME) + 9));
+						.indexOf(CONTROLLER_CMD_VOLUME) + 8));
 			} catch (NumberFormatException e) {
 				Toast.makeText(MainActivity.this, e.toString(),
 						Toast.LENGTH_SHORT).show();
@@ -844,8 +845,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer {
 	}
 
 	private void setVolume(int newVl) {
-		Toast.makeText(getApplicationContext(), Integer.toString(newVl),
-				Toast.LENGTH_SHORT).show();
+		if(newVl > 100 || newVl < 0) return;
+		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVl, 0);
 	}
 	
 	/* go back to launcher */
