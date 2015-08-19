@@ -9,6 +9,11 @@ import java.net.URL;
 import android.os.AsyncTask;
 
 public class HttpsRequest extends AsyncTask<String, Void, String> {
+	private int channel = 0;
+	public HttpsRequest(int channelIn){
+		super();
+		channel = channelIn;
+	}
 	
 	@Override
 	protected String doInBackground(String... params) {
@@ -23,7 +28,7 @@ public class HttpsRequest extends AsyncTask<String, Void, String> {
 			con.setRequestProperty("User-Agent", "Mozilla/5.0");
 			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 	
-			String urlParameters = "msoid=1&channelnum=65";
+			String urlParameters = "msoid=1&channelnum="+Integer.toString(channel);
 
 			// Send post request
 			

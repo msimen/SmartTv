@@ -1,0 +1,87 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ff000000"
+    tools:context=".HomeActivity">
+
+
+    <!--<view-->
+    <!--android:id="@+id/apPlaceHoldFull"-->
+    <!--class="org.itri.icl.droptv.sharetvhome.views.screenmodeappviews.FullScreenModeAppHostView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_centerInParent="true" />-->
+
+    <!--<view-->
+    <!--android:id="@+id/apPlaceHoldBottom"-->
+    <!--class="org.itri.icl.droptv.sharetvhome.views.screenmodeappviews.BottomScreenModeAppHostView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_alignParentBottom="true" />-->
+
+    <!--<view-->
+    <!--android:id="@+id/apPlaceHoldRight"-->
+    <!--class="org.itri.icl.droptv.sharetvhome.views.screenmodeappviews.RightScreenModeAppHostView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_alignParentRight="true" />-->
+
+    <!--<view-->
+    <!--android:id="@+id/tvvTV"-->
+    <!--class="org.itri.icl.droptv.sharetvhome.views.frameviews.MitraStarTVView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_centerInParent="true" />-->
+
+    <!--<view-->
+    <!--android:id="@+id/atvApps"-->
+    <!--class="org.itri.icl.droptv.sharetvhome.views.frameviews.AppTrayView"-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:layout_alignParentLeft="true"-->
+    <!--android:layout_marginLeft="-280px"-->
+    <!--android:background="@color/secondary_text_default_material_light" />-->
+
+    <!--<view-->
+    <!--android:id="@+id/stvSyses"-->
+    <!--class="org.itri.icl.droptv.sharetvhome.views.frameviews.SysTrayView"-->
+    <!--android:layout_width="150dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_marginRight="-300px"-->
+    <!--android:background="@color/secondary_text_default_material_light" />-->
+
+    <!--<view-->
+    <!--android:id="@+id/stvSyses"-->
+    <!--class="org.itri.icl.droptv.sharetvhome.views.frameviews.SysTrayFloatView"-->
+    <!--android:layout_width="150dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_marginRight="-300px"-->
+    <!--android:background="@color/secondary_text_default_material_light" />-->
+
+    
+    <!--<SurfaceView-->
+    <!--android:layout_width="500px"-->
+    <!--android:layout_height="500px"-->
+    <!--android:id="@+id/svTV" />-->
+
+    <!--<io.vov.vitamio.widget.VideoView-->
+    <!--android:id="@+id/surface_view"-->
+    <!--android:layout_width="fill_parent"-->
+    <!--android:layout_height="fill_parent"-->
+    <!--android:layout_centerHorizontal="true"-->
+    <!--android:layout_centerVertical="true" />-->
+
+    <!--<VideoView-->
+    <!--android:id="@+id/vv_Player"-->
+    <!--android:layout_width="fill_parent"-->
+    <!--android:layout_height="fill_parent"-->
+    <!--android:layout_centerHorizontal="true"-->
+    <!--android:layout_centerVertical="true" />-->
+</RelativeLayout>

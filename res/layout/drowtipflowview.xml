@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!--<TextView-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="抓"-->
+    <!--android:rotation="40"-->
+    <!--android:textSize="30dp"/>-->
+
+    <!--<view-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginTop="30dp"-->
+    <!--class="itri.smarttvhome.views.PolygonView"-->
+    <!--android:layout_marginLeft="-130dp"-->
+    <!--android:id="@+id/myview" />-->
+
+
+    <ImageView
+        android:id="@+id/imDropTip"
+        android:layout_width="285dp"
+        android:layout_height="500dp"
+        android:layout_marginLeft="-285dp" />
+</RelativeLayout>

@@ -35,6 +35,6 @@ public class HomeAppRightView extends HomeAppViewBase {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 //        this.setMeasuredDimension((int) (this.screen_width * 0.3), this.screen_height);
 
-        this.setMeasuredDimension((int) (this.screen_width * 0.3), this.screen_height);
+        this.setMeasuredDimension((int) (this.screen_width * 0.4), this.screen_height);
     }
 }
