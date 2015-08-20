@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_alignParentBottom="true"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     tools:context=".MainActivity" >
 
     <HorizontalScrollView
         android:id="@+id/appsLayout"
-        android:layout_width="fill_parent"
-        android:layout_height="150dp"
+        android:layout_width="match_parent"
+        android:layout_height="125dp"
         android:background="#00000000"
         android:fillViewport="true"
         android:orientation="horizontal" >
@@ -17,10 +17,57 @@
         <LinearLayout
             android:id="@+id/appsList"
             android:layout_width="1000dp"
-            android:layout_height="fill_parent"
+            android:layout_height="match_parent"
             android:gravity="bottom"
             android:orientation="horizontal" >
         </LinearLayout>
     </HorizontalScrollView>
+
+    <LinearLayout
+        android:id="@+id/timeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/appslist_gradient"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/programStartTimeIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_play_arrow_white_24dp" />
+
+        <TextView
+            android:id="@+id/programStartTime"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start|bottom"
+			android:layout_marginTop="7dp"            
+            android:textColor="#DDD"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/curTime"
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center|bottom"
+            android:textColor="#FFF"
+            android:textSize="40sp" />
+
+        <ImageView
+            android:id="@+id/programEndTimeIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_stop_white_24dp" />
+
+        <TextView
+            android:id="@+id/programEndTime"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end|bottom"
+            android:layout_marginTop="7dp"
+            android:textColor="#DDD"
+            android:textSize="24sp" />
+    </LinearLayout>
 
 </LinearLayout>

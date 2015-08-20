@@ -18,7 +18,7 @@ public class HttpsRequest extends AsyncTask<String, Void, String> {
 	@Override
 	protected String doInBackground(String... params) {
 		try{
-			String url = "http://droptv.openapis.io:8088/SmarttvWebServiceApi/GetChannelStatus";
+			String url = "http://api.droptv.tv:8088/SmarttvWebServiceApi/GetChannelStatus";
 			URL obj = new URL(url);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 

@@ -1,7 +1,5 @@
 package tw.futureInsighters.Tv;
 
-import tw.futureInsighters.Tv.R;
-
 import itri.smarttvhome.activities.DeveloperActivity;
 //import itri.smarttvhome.activities.HomeActivity;
 //import itri.smarttvhome.activities.HomeActivity.NetworkAvaiableTimerTask;
@@ -109,7 +107,6 @@ import itri.smarttvsdk.bizs.persists.PersistManager;
 import itri.smarttvsdk.bizs.tVContexts.IRReceiverType;
 import itri.smarttvsdk.bizs.workItems.IWorkItem;
 import itri.smarttvsdk.broadcastSenders.IBroadcastSender;
-import itri.smarttvsdk.broadcastSenders.commands.CmdUpBroadcastSender;
 import itri.smarttvsdk.broadcastSenders.instructions.IstAppBottomBroadcastSender;
 import itri.smarttvsdk.broadcastSenders.instructions.IstAppRightBroadcastSender;
 import itri.smarttvsdk.broadcastSenders.instructions.IstBackBroadcastSender;
@@ -135,7 +132,6 @@ import org.allseenaliance.alljoyn.Observer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -151,10 +147,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Message;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -219,9 +215,12 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private ChannelInfo curChannelInfo;
 
 	private class ChannelInfo {
-		String name = "No Channel Name";
+		String channelName = "No Channel Name";
+		String programName = "No Program Name";
+		String programDescription = "No Introduction About This Program";
+		String programStartTime = "No Information";
+		String programEndTime = "No Information";
 		int number = 0;
-		String intro = "No Introduction";
 		Boolean isAds = false;
 	}
 
@@ -262,9 +261,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		/* SDK - smarttvhome */
 
 		// hdmi signal
-//		Intent ic = new Intent(HDMI_CLOSE_SCALE);
-//		MainActivity.this.sendBroadcast(ic);
-		 fullHandle();
+		// Intent ic = new Intent(HDMI_CLOSE_SCALE);
+		// MainActivity.this.sendBroadcast(ic);
+		fullHandle();
 		// previewHandle();
 
 		this.container = (RelativeLayout) this.findViewById(R.id.container);
@@ -275,19 +274,18 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				// MSO 1
 				1, this.container);
 
-//		this.tVContextFactory = new TVContextFactory(this, BoxType.MitraStar,
-//				IRReceiverType.MitraStar, IRSenderType.TBC,
-//				SourceType.MitraStarHdmiIn, 1,
-//				this.container);
-		
+		// this.tVContextFactory = new TVContextFactory(this, BoxType.MitraStar,
+		// IRReceiverType.MitraStar, IRSenderType.TBC,
+		// SourceType.MitraStarHdmiIn, 1,
+		// this.container);
+
 		/* turn on channel player at the beginning by turn one channel */
 		this.tVContextFactory.getTvPlayer().toNextChannel();
 
-		
-//		this.tVContextFactory = new TVContextFactory(this, BoxType.MitraStar,
-//				IRReceiverType.MitraStar, IRSenderType.TBC,
-//				SourceType.MitraStarHdmiIn, ProgramProviderType.TBC,
-//				this.container);
+		// this.tVContextFactory = new TVContextFactory(this, BoxType.MitraStar,
+		// IRReceiverType.MitraStar, IRSenderType.TBC,
+		// SourceType.MitraStarHdmiIn, ProgramProviderType.TBC,
+		// this.container);
 
 		// Toast.makeText(MainActivity.this, "onPower_Channel:" +
 		// this.tVContextFactory.getTvPlayer().getChannel(),
@@ -1120,7 +1118,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		BottomView bv = new BottomView(this);
 		setAppContentView(bv);
 		loadApps();
-
+		updateTimeAndChannelTime();
 		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTON);
 
 	}
@@ -1184,7 +1182,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private void hideBottomView() {
 		appsListStatus = UIStatus.CLOSED;
 		final HorizontalScrollView appsLayout = (HorizontalScrollView) findViewById(R.id.appsLayout);
+		final LinearLayout timeLayout = (LinearLayout) findViewById(R.id.timeLayout);
 		appsLayout.animate().translationY(450);
+		timeLayout.animate().translationY(450);
 	}
 
 	private void hideBookmarkView() {
@@ -1299,8 +1299,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private void updateHistory() {
 
 		String messager = mChatApplication.getHistoryMessage();
-//		Toast.makeText(MainActivity.this, "msg got! - " + messager,
-//				Toast.LENGTH_SHORT).show();
+//		 Toast.makeText(MainActivity.this, "msg got! - " + messager,
+//		 Toast.LENGTH_SHORT).show();
 
 		// preview.setText(messager);
 
@@ -1376,15 +1376,16 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			getChannelInfo();
 
 			// prepare information
-			String name = curChannelInfo.name;
-			int number = curChannelInfo.number;
-			String intro = curChannelInfo.intro;
-			Boolean isAds = curChannelInfo.isAds;
+			String channelName = curChannelInfo.channelName;
+			String programName = curChannelInfo.programName;
+			String number = Integer.toString(curChannelInfo.number);
+			String intro = curChannelInfo.programDescription;
+			String isAds = String.valueOf(curChannelInfo.isAds);
 
 			// pack the message and response to client
-			String response = TV_RESPONSE_CHANNEL_INFO + " --" + number
-					+ " ---" + name + " ----" + intro + " -----"
-					+ String.valueOf(isAds);
+			String response = TV_RESPONSE_CHANNEL_INFO + " *" + number + " **"
+					+ channelName + " ***" + programName + " ****" + intro
+					+ " *****" + isAds + " ******";
 			mChatApplication.newLocalUserMessage(response);
 
 		} else if (messager.contains(CONTROLLER_CMD_HOME)) {
@@ -1392,8 +1393,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		} else if (messager.contains(CONTROLLER_NOTIFICATION_SYSNOTI)) {
 			startNotificationView(messager.substring(messager
 					.indexOf(CONTROLLER_NOTIFICATION_SYSNOTI + " -") + 14));
-		} else if(messager.contains(CONTROLLER_CMD_HIDE_APPSLIST)){
-			if(appsListStatus == UIStatus.OPEN){
+		} else if (messager.contains(CONTROLLER_CMD_HIDE_APPSLIST)) {
+			if (appsListStatus == UIStatus.OPEN) {
 				hideBottomView();
 			}
 		}
@@ -1620,10 +1621,12 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 	private void getChannelInfo() {
 		// to syn with SDK - smarttvhome
-		//curChannelInfo.number = Integer.parseInt(channel); // crashes
-		//curChannelInfo.number = this.getChannelNumber(); // useless
-		
-		Toast.makeText(getApplicationContext(), "going to request channel info! channl:" + curChannelInfo.number,Toast.LENGTH_SHORT);
+		// curChannelInfo.number = Integer.parseInt(channel); // crashes
+		// curChannelInfo.number = this.getChannelNumber(); // useless
+
+		Toast.makeText(getApplicationContext(),
+				"going to request channel info! channl:"
+						+ curChannelInfo.number, Toast.LENGTH_SHORT);
 
 		String result = "nothing!";
 		HttpsRequest https = new HttpsRequest(curChannelInfo.number);
@@ -1643,11 +1646,18 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		try {
 			JSONResult = new JSONObject(result);
 			// String responseCode = JSONResult.getString("responsecode");
-			String channelName = JSONResult.getString("channelname");
 			// Boolean isProgram = JSONResult.getBoolean("isprogram");
+
+			curChannelInfo.channelName = JSONResult.getString("channelname");
+			curChannelInfo.programName = JSONResult.getString("programname");
+			curChannelInfo.programDescription = JSONResult
+					.getString("programdescription");
+			curChannelInfo.programStartTime = JSONResult
+					.getString("programstarttime");
+			
+			curChannelInfo.programEndTime = JSONResult
+					.getString("programendtime");
 			Boolean isAds = JSONResult.getBoolean("isads");
-			curChannelInfo.name = channelName;
-			curChannelInfo.intro = "No Intro from server!";
 			curChannelInfo.isAds = isAds;
 		} catch (JSONException e) {
 			Toast.makeText(
@@ -1662,29 +1672,47 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 	/* get the current channel that is playing (from SDK) */
 
-	private void getCurChannel() {
-		// Not done yet
+	private int getCurChannel() {
+		return curChannelInfo.number;
 	}
+	
+	/* BottomView current time and program start/end time */
 
-	// private boolean tickTock = false;
-	//
-	// private void startClock() {
-	// Time today = new Time(Time.getCurrentTimezone());
-	// today.setToNow();
-	// TextView clock = (TextView) findViewById(R.id.clock);
-	// if (tickTock) {
-	// clock.setText(today.format("%k:%M"));
-	// } else {
-	// clock.setText(today.format("%k %M"));
-	// }
-	// tickTock = !tickTock;
-	//
-	// new android.os.Handler().postDelayed(new Runnable() {
-	// public void run() {
-	// startClock();
-	// }
-	// }, 1000);
-	// }
+	private boolean tickTock = false;
+	
+	private void startClock() {
+		if(appsListStatus == UIStatus.CLOSED) return;
+		Time today = new Time(Time.getCurrentTimezone());
+		today.setToNow();
+		TextView clock = (TextView) findViewById(R.id.curTime);
+		if (tickTock) {
+			clock.setText(today.format("%k:%M"));
+		} else {
+			clock.setText(today.format("%k %M"));
+		}
+		tickTock = !tickTock;
+		new android.os.Handler().postDelayed(new Runnable() {
+			public void run() {
+				startClock();
+			}
+		}, 1000);
+	}
+	
+	private void updateTimeAndChannelTime(){
+		// clock
+		startClock();
+		
+		// channel start/end time
+		final TextView programStartTime = (TextView) findViewById(R.id.programStartTime);
+		final TextView programEndTime = (TextView) findViewById(R.id.programEndTime);
+		try{
+			programStartTime.setText(curChannelInfo.programStartTime.substring(curChannelInfo.programStartTime.indexOf(" ") + 1, curChannelInfo.programStartTime.lastIndexOf(":")));
+			programEndTime.setText(curChannelInfo.programEndTime.substring(curChannelInfo.programEndTime.indexOf(" ") + 1, curChannelInfo.programEndTime.lastIndexOf(":")));
+		}catch(Exception e){
+			
+		}
+		
+	};
 
 	/* TV control */
 
@@ -1738,7 +1766,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	// };
 	private PersistManager persistManager;
 	private RelativeLayout container;
-	private ImageView imageView;
+	// private ImageView imageView;
 	private CmdAdReceiveBroadcastReceiver cmdAdReceiveBroadcastReceiver;
 	private CmdAppBottomReceiveBroadcastReceiver cmdAppBottomReceiveBroadcastReceiver;
 	private CmdAppRightReceiveBroadcastReceiver cmdAppRightReceiveBroadcastReceiver;
@@ -1792,7 +1820,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	// private UsbSerialDriver usbSerialDriver;
 	// private UsbSerialPort iRUSBPort=null;
 	private long networkAvailableCheckTime = 10000;
-	private HandlerThread allJoynbusThread;
+	// private HandlerThread allJoynbusThread;
 	private boolean isStratToFull = false;
 	private boolean needIRPermission = false;
 	// private int viewChennel;
@@ -2609,9 +2637,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 	/* hdmi */
 	private void fullHandle() {
-//		Intent ic = new Intent(HDMI_CLOSE_SCALE);
-//		MainActivity.this.sendBroadcast(ic);
-//		// Handler handler = new Handler();
+		// Intent ic = new Intent(HDMI_CLOSE_SCALE);
+		// MainActivity.this.sendBroadcast(ic);
+		// // Handler handler = new Handler();
 		// Runnable r = new Runnable() {
 		// public void run() {
 		Intent i = new Intent(HDMI_SET_SCALE);
