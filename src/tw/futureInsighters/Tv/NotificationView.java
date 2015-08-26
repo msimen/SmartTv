@@ -34,10 +34,34 @@ public class NotificationView extends HomeAppRightView {
         	  @Override
         	  public void run() {
         		  final LinearLayout notificationWrapper = (LinearLayout) findViewById(R.id.notificationWrapper);
+        		  notificationWrapper.setAlpha(0.8f);
+        	  }
+        	}
+        , 7000);
+        new Handler().postDelayed(new Runnable() {
+      	  @Override
+      	  public void run() {
+      		  final LinearLayout notificationWrapper = (LinearLayout) findViewById(R.id.notificationWrapper);
+      		  notificationWrapper.setAlpha(0.5f);
+      	  }
+      	}
+      , 7300);
+        new Handler().postDelayed(new Runnable() {
+      	  @Override
+      	  public void run() {
+      		  final LinearLayout notificationWrapper = (LinearLayout) findViewById(R.id.notificationWrapper);
+      		  notificationWrapper.setAlpha(0.2f);
+      	  }
+      	}
+      , 7600);
+        new Handler().postDelayed(new Runnable() {
+        	  @Override
+        	  public void run() {
+        		  final LinearLayout notificationWrapper = (LinearLayout) findViewById(R.id.notificationWrapper);
         		  notificationWrapper.setAlpha(0.0f);
         	  }
         	}
-        , 4000);
+        , 7900);
         
     }
 }
