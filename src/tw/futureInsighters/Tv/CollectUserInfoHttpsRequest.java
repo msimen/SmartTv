@@ -95,7 +95,7 @@ public class CollectUserInfoHttpsRequest extends
 		String result = softwareIDPref.getString("softwareID", "");
 		if (result.equals("")) {
 			SharedPreferences.Editor editor = softwareIDPref.edit();
-			String newID = md5(Integer.toString(new Random().nextInt(500)));
+			String newID = md5(Long.toString(System.currentTimeMillis()));
 			editor.putString("softwareID", newID);
 			editor.commit();
 			result = newID;
