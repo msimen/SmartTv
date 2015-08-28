@@ -1,9 +1,5 @@
 package tw.futureInsighters.Tv;
 
-//import itri.smarttvhome.activities.HomeActivity;
-//import itri.smarttvhome.activities.HomeActivity.NetworkAvaiableTimerTask;
-//import itri.smarttvhome.activities.HomeActivity.ToChannelHitInVisibleTimerTask;
-//import itri.smarttvhome.activities.HomeActivity.ToChannelTimerTask;
 import itri.smarttvhome.androidservices.HTTPService;
 import itri.smarttvhome.bizs.tVContexts.BoxType;
 import itri.smarttvhome.bizs.tVContexts.ChannelFailEventArgs;
@@ -156,11 +152,9 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -180,7 +174,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private final String HDMI_SET_SCALE = "com.mitrastar.intent.setscale.action";
 
 	/* control CMD */
-	
+
 	private final int appIconWidth = 100;
 	/* part1: client to TV CMD */
 	private final String CONTROLLER_CMD_UI_LEFT = "ISTVSgoleft";
@@ -221,17 +215,18 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		String name = "Man";
 		int age = 0;
 		int gender = 0;
-		int pace = 0;
+		int pace = 0; // 0 ~ 3. for 0~2, phone notification will be postponed
+						// till ads-on
 		int notification = 1; // 0 for undefined ; 1 for on ; 2 for off
 		int preferField = 0;
 	}
-	
+
 	/* system notification queue */
-	
+
 	private LinkedList<String> sysNotiQueue = new LinkedList<String>();
 
 	/* channel info variables */
-	
+
 	private ChannelInfo curChannelInfo;
 
 	private class ChannelInfo {
@@ -252,20 +247,13 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private int curFocusApp = 5;
 	private int screenWidth;
 
-	// this variable is built to prevent referencing elements on the AppsList layout while it is not on screen
+	// this variable is built to prevent referencing elements on the AppsList
+	// layout while it is not on screen
 	private UIStatus appsListStatus = UIStatus.CLOSED;
 
-	
 	/* alljoyn */
-	
-	private Button join;
-	private Button stop;
-	private Button start;
-	private Button leave;
-	// private Button sendjson;
-
 	private MainApplication mChatApplication = null;
-	
+
 	private static final int HANDLE_APPLICATION_QUIT_EVENT = 0;
 	private static final int HANDLE_CHANNEL_STATE_CHANGED_EVENT = 1;
 	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 2;
@@ -274,7 +262,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.homeactivity);
-		
 
 		/* SDK - smarttvhome */
 
@@ -301,30 +288,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		/* turn on channel player at the beginning by turn one channel */
 		/* it seems that doing this can help the SDK initialize the channel */
 		this.tVContextFactory.getTvPlayer().toNextChannel();
-
-		// this.tVContextFactory = new TVContextFactory(this, BoxType.MitraStar,
-		// IRReceiverType.MitraStar, IRSenderType.TBC,
-		// SourceType.MitraStarHdmiIn, ProgramProviderType.TBC,
-		// this.container);
-
-		// Toast.makeText(MainActivity.this, "onPower_Channel:" +
-		// this.tVContextFactory.getTvPlayer().getChannel(),
-		// Toast.LENGTH_LONG).show();
-
-		// this.imageView = (ImageView) this.findViewById(R.id.imageView);
-		// this.tvHomeService = new TVHomeService(this.uiHandler);
-
-		// this.tvvTV = new MitraStarTVView(this);
-
-		// this.tvTip = (TextView) this.findViewById(R.id.tvTip);
-		// this.tvTip.setVisibility(View.INVISIBLE);
-
-		// this.apPlaceHoldFull = (FullScreenModeAppHostView)
-		// this.findViewById(R.id.apPlaceHoldFull);
-		// this.apPlaceHoldBottom = (BottomScreenModeAppHostView)
-		// this.findViewById(R.id.apPlaceHoldBottom);
-		// this.apPlaceHoldRight = (RightScreenModeAppHostView)
-		// this.findViewById(R.id.apPlaceHoldRight);
 
 		this.cmdHomeReceiveBroadcastReceiver = new CmdHomeReceiveBroadcastReceiver(
 				this);
@@ -546,12 +509,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				.setDelegateListener(new IAppChangeBroadcastReceiverDelegateListener() {
 					@Override
 					public void appChange() {
-						// atvApps.appRefresh();
-						// atvApps.hide();
-						// if(channel.equals("")==false) {
-						// tVContextFactory.getTvPlayer().toChannel(Integer.parseInt(channel));
-						// tVContextFactory.getTvPlayer().toChannel(55);
-						// }
 
 						channel = getPersistManager().getValue("channel");
 						if (channel.equals("") == false) {
@@ -737,21 +694,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		// tvTip.setVisibility(View.VISIBLE);
 		// }
 		// }
-
-		// @Override
-		// public void itemActionRun() {
-		// // tvvTV.toHideMode();
-		// tVContextFactory.getTvPlayer().toHideMode();
-		// MainActivity.this.tipNumber = atvApps.getTotalBadgeNumber();
-		// if (MainActivity.this.tipNumber > 0) {
-		// tvTip.setVisibility(View.VISIBLE);
-		// } else {
-		// tvTip.setVisibility(View.INVISIBLE);
-		// }
-		//
-		// tvTip.setText(MainActivity.this.tipNumber + "");
-		// }
-		// });
 
 		this.tVBottomModeBroadcastReceiver = new TVBottomModeBroadcastReceiver(
 				this);
@@ -940,201 +882,26 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 		/* get alljoyn service */
 		mChatApplication = (MainApplication) getApplication();
+		mChatApplication.checkin();
+		mChatApplication.addObserver(this);
+
+		updateChannelState();
 
 		/* channel info */
 		curChannelInfo = new ChannelInfo();
-
-		Toast.makeText(this, "Channel:" + this.getChannelNumber(),
-				Toast.LENGTH_SHORT).show();
 
 		/* app list initialize */
 		getScreenSize();
 		// showAppsList();
 
-		// startNotificationView();
-
-		// new android.os.Handler().postDelayed(new Runnable() {
-		// public void run() {
-		//
-		// }
-		// }, 4000);
-
-		// Alljoyn
-		start = new Button(getApplicationContext());
-		stop = new Button(getApplicationContext());
-		join = new Button(getApplicationContext());
-
-		leave = new Button(getApplicationContext());
-
-		stop.setEnabled(false);
-		// sendjson.setEnabled(false);
-		leave.setEnabled(false);
-
-		// sendjson.setOnClickListener(new OnClickListener() {
-		//
-		// @Override
-		// public void onClick(View arg0) {
-		//
-		// String s = edit.getText().toString() + "";
-		//
-		// mChatApplication.newLocalUserMessage(s);
-		//
-		// edit.setText("");
-		//
-		// }
-		// });
-
-		// Start channel
-		start.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-
-				mChatApplication.hostSetChannelName("FutureInsighters");
-				mChatApplication.hostInitChannel();
-				mChatApplication.hostStartChannel();
-
-				start.setEnabled(false);
-
-				stop.setEnabled(true);
-
-			}
-		});
-
-		// Simulate click start button
-		// new android.os.Handler().postDelayed(new Runnable() {
-		// public void run() {
-		// start.performClick();
-		// }
-		// }, 3000);
-
-		// Stop server (Useless)
-		stop.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				mChatApplication.hostStopChannel();
-
-				stop.setEnabled(false);
-				start.setEnabled(true);
-				leave.setEnabled(false);
-				// sendjson.setEnabled(false);
-
-			}
-		});
-
-		// Find and join channel
-		join.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-
-				// final Dialog dialog = new Dialog(MainActivity.this);
-				// dialog.requestWindowFeature(dialog.getWindow().FEATURE_NO_TITLE);
-				// dialog.setContentView(R.layout.usejoindialog);
-
-				// Find the channel in the channel list
-				ArrayAdapter<String> channelListAdapter = new ArrayAdapter<String>(
-						MainActivity.this, android.R.layout.test_list_item);
-				final ListView channelList = new ListView(
-						getApplicationContext());
-				channelList.setAdapter(channelListAdapter);
-
-				List<String> channels = mChatApplication.getFoundChannels();
-
-				for (String channel : channels) {
-					int lastDot = channel.lastIndexOf('.');
-					if (lastDot < 0) {
-						continue;
-					}
-					channelListAdapter.add(channel.substring(lastDot + 1));
-				}
-				channelListAdapter.notifyDataSetChanged();
-
-				String name = "";
-				boolean found = false;
-				// We find the channel named "FutureInsighters"
-				for (int i = 0; i < channels.size(); i++) {
-					name = channelList.getItemAtPosition(i).toString();
-					if (name.equals("FutureInsighters")) {
-						found = true;
-					}
-				}
-				// If not found, retry
-				if (!found) {
-					new android.os.Handler().postDelayed(new Runnable() {
-						public void run() {
-							Toast.makeText(getApplicationContext(),
-									"Initialization failed. Retrying...",
-									Toast.LENGTH_SHORT).show();
-							join.performClick();
-						}
-					}, 1000);
-					return;
-				}
-				Toast.makeText(getApplicationContext(),
-						"Initialized. Have a good day!", Toast.LENGTH_SHORT)
-						.show();
-
-				// Set channel name and join
-				mChatApplication.useSetChannelName(name);
-				mChatApplication.useJoinChannel();
-
-				start.setEnabled(false);
-				stop.setEnabled(false);
-				join.setEnabled(false);
-				// sendjson.setEnabled(true);
-				leave.setEnabled(true);
-
-				// Button cancel = (Button) dialog
-				// .findViewById(R.id.useJoinCancel);
-				// cancel.setOnClickListener(new View.OnClickListener() {
-				// public void onClick(View view) {
-				//
-				// dialog.dismiss();
-				// }
-				// });
-
-			}
-		});
-
 		// Simulate click join button
-		new android.os.Handler().postDelayed(new Runnable() {
-			public void run() {
-				join.performClick();
-			}
-		}, 3000);
+		alljoynJoin();
 
-		leave.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-
-				mChatApplication.useLeaveChannel();
-				mChatApplication.useSetChannelName("Not set");
-				leave.setEnabled(false);
-				// sendjson.setEnabled(false);
-
-				// start.setEnabled(true);
-				stop.setEnabled(true);
-				join.setEnabled(true);
-
-			}
-		});
-
-		mChatApplication.checkin();
-
-		// updateChannelState();
-
-		mChatApplication.addObserver(this);
-
-		updateChannelState();
-		
 		/* info regular updater start */
 		channelInfoRegularUpdater();
 	}
 
-	/* view control */
+	/* UI view control */
 
 	private void showAppsList() {
 		appsListStatus = UIStatus.OPEN;
@@ -1152,9 +919,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTOFF);
 		BookmarkView fv = new BookmarkView(this);
 		this.setAppContentView(fv);
-		
 
-//		new ScreenshotManager(this).screenshot();
+		// new ScreenshotManager(this).screenshot();
 	}
 
 	private void startHistoryView() {
@@ -1166,13 +932,15 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	}
 
 	private void startNotificationView(String msg) {
-		// if user pace is set to "slow", put notification into queue so that they will
+		// if user pace is set to "slow", put notification into queue so that
+		// they will
 		// not be interrupted while watching program
-		if(userInfo.pace == 1 && curChannelInfo.isAds){
+		if (userInfo.pace < 2 && !curChannelInfo.isAds) {
 			// put msg into notification queue
 			sysNotiQueue.add(msg);
+			return;
 		}
-		
+
 		appsListStatus = UIStatus.CLOSED;
 		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTOFF);
 		NotificationView nv = new NotificationView(this);
@@ -1218,8 +986,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		final LinearLayout timeLayout = (LinearLayout) findViewById(R.id.timeLayout);
 		appsLayout.animate().translationY(450);
 		timeLayout.animate().translationY(450);
-		
-		
+
 	}
 
 	private void hideBookmarkView() {
@@ -1272,7 +1039,63 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_SHORT).show();
 	}
 
-	/* Alljoyn */
+	/* Alljoyn functions */
+
+	// Find and join channel
+	private void alljoynJoin() {
+		// Find the channel in the channel list
+		ArrayAdapter<String> channelListAdapter = new ArrayAdapter<String>(
+				MainActivity.this, android.R.layout.test_list_item);
+		final ListView channelList = new ListView(getApplicationContext());
+		channelList.setAdapter(channelListAdapter);
+
+		List<String> channels = mChatApplication.getFoundChannels();
+
+		for (String channel : channels) {
+			int lastDot = channel.lastIndexOf('.');
+			if (lastDot < 0) {
+				continue;
+			}
+			channelListAdapter.add(channel.substring(lastDot + 1));
+		}
+		channelListAdapter.notifyDataSetChanged();
+
+		String name = "";
+		boolean found = false;
+		// We find the channel named "FutureInsighters"
+		for (int i = 0; i < channels.size(); i++) {
+			name = channelList.getItemAtPosition(i).toString();
+			if (name.equals("FutureInsighters")) {
+				found = true;
+			}
+		}
+		// If not found, retry
+		if (!found) {
+			new android.os.Handler().postDelayed(new Runnable() {
+				public void run() {
+					Toast.makeText(getApplicationContext(),
+							"Initialization failed. Retrying...",
+							Toast.LENGTH_SHORT).show();
+					alljoynJoin();
+				}
+			}, 1000);
+			return;
+		}
+		Toast.makeText(getApplicationContext(),
+				"Initialized. Have a good day!", Toast.LENGTH_SHORT).show();
+
+		// Set channel name and join
+		mChatApplication.useSetChannelName(name);
+		mChatApplication.useJoinChannel();
+
+	}
+
+	// start channel
+	// private void alljoynStart() {
+	// mChatApplication.hostSetChannelName("FutureInsighters");
+	// mChatApplication.hostInitChannel();
+	// mChatApplication.hostStartChannel();
+	// }
 
 	private void updateChannelState() {
 		AllJoynService.HostChannelState channelState = mChatApplication
@@ -1283,9 +1106,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			// haveName = false;
 			name = "Not set";
 		}
-
-		// Toast.makeText(MainActivity.this, "Session Name " + name,
-		// Toast.LENGTH_SHORT).show();
 
 		switch (channelState) {
 		case IDLE:
@@ -1336,8 +1156,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		String messager = mChatApplication.getHistoryMessage();
 		// Toast.makeText(MainActivity.this, "msg got! - " + messager,
 		// Toast.LENGTH_SHORT).show();
-
-		// preview.setText(messager);
 
 		// TV Control Command Handler Goes Here
 
@@ -1401,8 +1219,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				newCn = Integer.parseInt(messager.substring(messager
 						.indexOf(CONTROLLER_CMD_CHANNEL) + 9));
 			} catch (NumberFormatException e) {
-				// Toast.makeText(MainActivity.this, e.toString(),
-				// Toast.LENGTH_SHORT).show();
+
 				return;
 			}
 			setChannel(newCn);
@@ -1411,7 +1228,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			curChannelInfo = getChannelInfo(curChannelInfo.number);
 
 			// prepare information
-			
+
 			String channelName = curChannelInfo.channelName;
 			String programName = curChannelInfo.programName;
 			String number = Integer.toString(curChannelInfo.number);
@@ -1419,17 +1236,20 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			String isAds = String.valueOf(curChannelInfo.isAds);
 
 			// pack the message and response to client
-			String response = TV_RESPONSE_CUR_CHANNEL_INFO + " *" + number + " **"
-					+ channelName + " ***" + programName + " ****" + intro
-					+ " *****" + isAds + " ******";
+			String response = TV_RESPONSE_CUR_CHANNEL_INFO + " *" + number
+					+ " **" + channelName + " ***" + programName + " ****"
+					+ intro + " *****" + isAds + " ******";
 			mChatApplication.newLocalUserMessage(response);
-		} else if(messager.contains(CONTROLLER_CMD_GET_CHANNEL_INFO)){
+		} else if (messager.contains(CONTROLLER_CMD_GET_CHANNEL_INFO)) {
 			int channel;
-			try{
-				channel = Integer.parseInt( messager.substring(messager.indexOf(CONTROLLER_CMD_GET_CHANNEL_INFO) + 16 ) );
-			}catch(Exception e){ return;}
+			try {
+				channel = Integer.parseInt(messager.substring(messager
+						.indexOf(CONTROLLER_CMD_GET_CHANNEL_INFO) + 16));
+			} catch (Exception e) {
+				return;
+			}
 			ChannelInfo resultChannelInfo = getChannelInfo(channel);
-			
+
 			String channelName = resultChannelInfo.channelName;
 			String programName = resultChannelInfo.programName;
 			String number = Integer.toString(resultChannelInfo.number);
@@ -1444,9 +1264,16 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 		} else if (messager.contains(CONTROLLER_CMD_HOME)) {
 			backToHome();
-		} else if (messager.contains(CONTROLLER_NOTIFICATION_SYSNOTI)) { // while get system notification from user's phone
-			if(userInfo.notification != 1) return ; // check whether user disabled sync notification
-			
+		} else if (messager.contains(CONTROLLER_NOTIFICATION_SYSNOTI)) { // while
+																			// get
+																			// system
+																			// notification
+																			// from
+																			// user's
+																			// phone
+			if (userInfo.notification != 1)
+				return; // check whether user disabled sync notification
+
 			startNotificationView(messager.substring(messager
 					.indexOf(CONTROLLER_NOTIFICATION_SYSNOTI + " -") + 14));
 		} else if (messager.contains(CONTROLLER_CMD_HIDE_APPSLIST)) {
@@ -1695,14 +1522,12 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	/* get channel info from remote server (ITRI) */
 
 	private ChannelInfo getChannelInfo(int targetChannel) {
-		// to syn with SDK - smarttvhome
-		// curChannelInfo.number = Integer.parseInt(channel); // crashes
-		// curChannelInfo.number = this.tVContextFactory.getTvPlayer().getChannel(); // NOT TESTED. MAYNE IT WORKS!!
 		ChannelInfo curChannelInfo = new ChannelInfo();
 		curChannelInfo.number = targetChannel;
-		
+
 		String result = "nothing!";
-		HttpsRequest https = new HttpsRequest(targetChannel);
+		ChannelInfoHttpsRequest https = new ChannelInfoHttpsRequest(
+				targetChannel);
 		try {
 			result = https.execute().get();
 		} catch (Exception e) {
@@ -1711,15 +1536,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 					getApplicationContext(),
 					"Something went wrong! Please check your Internet connection",
 					Toast.LENGTH_SHORT).show();
-//			Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT)
-//					.show();
 			return curChannelInfo;
 		}
 		JSONObject JSONResult;
 		try {
 			JSONResult = new JSONObject(result);
-			// String responseCode = JSONResult.getString("responsecode");
-			// Boolean isProgram = JSONResult.getBoolean("isprogram");
 
 			curChannelInfo.channelName = JSONResult.getString("channelname");
 			curChannelInfo.programName = JSONResult.getString("programname");
@@ -1745,7 +1566,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	/* get the current channel that is playing (from SDK) */
 
 	private int getCurChannel() {
-		return curChannelInfo.number;
+		return this.tVContextFactory.getTvPlayer().getChannel();
 	}
 
 	/* BottomView current time and program start/end time */
@@ -1805,8 +1626,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private void setVolume(int newVl) {
 		if (newVl > 100 || newVl < 0)
 			return;
-		// Toast.makeText(getApplicationContext(),
-		// "音量調整!!"+Integer.toString(newVl), Toast.LENGTH_SHORT).show();;
 		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVl, 0);
 	}
@@ -1823,24 +1642,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 	// private static final String USERID = "0a3c6bbacc";
 	private static final String USERID = "1";
-	// private final SerialInputOutputManager.Listener mListener =
-	// new SerialInputOutputManager.Listener() {
-	//
-	// @Override
-	// public void onRunError(Exception e) {
-	// Log.d("HomeActivity", "Runner stopped.");
-	// }
-	//
-	// @Override
-	// public void onNewData(final byte[] data) {
-	// MainActivity.this.runOnUiThread(new Runnable() {
-	// @Override
-	// public void run() {
-	// // SerialConsoleActivity.this.updateReceivedData(data);
-	// }
-	// });
-	// }
-	// };
 	private PersistManager persistManager;
 	private RelativeLayout container;
 	// private ImageView imageView;
@@ -1910,38 +1711,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		return this.persistManager;
 	}
 
-	// private Handler uiHandler = new Handler() {
-	// @Override
-	// public void handleMessage(Message msg) {
-	// switch (msg.what) {
-	// case MESSAGE_PING:
-	// String ping = (String) msg.obj;
-	// Toast.makeText(MainActivity.this, "ping:" + ping,
-	// Toast.LENGTH_LONG).show();
-	// break;
-	// case MESSAGE_PING_REPLY:
-	// String reply = (String) msg.obj;
-	// Toast.makeText(MainActivity.this, "reply:" + reply,
-	// Toast.LENGTH_LONG).show();
-	// break;
-	// case GET_IP4_ADDRESS:
-	// String ip4Address = (String) msg.obj;
-	// Toast.makeText(MainActivity.this, "ip4Address:" + ip4Address,
-	// Toast.LENGTH_LONG).show();
-	// break;
-	// case GET_IP6_ADDRESS:
-	// String ip6Address = (String) msg.obj;
-	// Toast.makeText(MainActivity.this, "ip6Address:" + ip6Address,
-	// Toast.LENGTH_LONG).show();
-	// break;
-	// default:
-	// break;
-	// }
-	// }
-	// };
-	// private BusObject tvHomeService;
-	// private AllJoynBusHandler allJoynBusHandler;
-	// private boolean isAd;
 	private UsbDevice iRDevice;
 
 	private DropTipOnBroadcastReceiverEventArgs dropTipOnData;
@@ -2040,41 +1809,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 	private void onCreateIRSender() {
 		Log.e("HomeActivity", "onCreateIRSender0");
-		UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
 		PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this, 0,
 				new Intent(ACTION_USB_PERMISSION), 0);
 		IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
 		registerReceiver(mUsbReceiver, filter);
-
-		// List<UsbSerialDriver> drivers =
-		// UsbSerialProber.getDefaultProber().findAllDrivers(manager);
-		//
-		// for (UsbSerialDriver current : drivers) {
-		// Log.e("HomeActivity", "onCreateIRSender1");
-		// String title = String.format("Vendor %s Product %s",
-		// HexDump.toHexString((short) current.getDevice().getVendorId()),
-		// HexDump.toHexString((short) current.getDevice().getProductId()));
-		//
-		//
-		// Log.e("HomeActivity", "Usb_Title:" + title);
-		//
-		// if (HexDump.toHexString((short)
-		// current.getDevice().getVendorId()).equals("2341") &&
-		// HexDump.toHexString((short)
-		// current.getDevice().getProductId()).equals("0043")) {
-		// if(HexDump.toHexString((short)
-		// current.getDevice().getVendorId()).equals("0403")&&
-		// HexDump.toHexString((short)
-		// current.getDevice().getProductId()).equals("6001")) {
-		// manager.requestPermission(current.getDevice(), mPermissionIntent);
-		// Log.e("HomeActivity", "onCreateIRSender2");
-		// this.usbSerialDriver =current;
-		// this.tVContextFactory.getSender().setUsbSerialDriver(current);
-		// needIRPermission = true;
-		// isStratToFull = true;
-		// }
-		// }
 
 		if (needIRPermission == false)
 			tVContextFactory.getTvPlayer().toFullMode();
@@ -2744,32 +2483,50 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		// };
 		// handler.postDelayed(r, 2000);
 	}
-	
+
 	/* channel info regular updater */
-	
-	private void channelInfoRegularUpdater(){
+
+	private void channelInfoRegularUpdater() {
 		// whether the next update should come faster or not
 		Boolean fequently = false;
 		// update channel info
 		getChannelInfo(curChannelInfo.number);
-		
+
 		// Things to do if is_ads
-		if(curChannelInfo.isAds){
-			if(userInfo.pace == 1){
+		if (curChannelInfo.isAds) {
+			if (userInfo.pace < 2) {
+				Toast.makeText(getApplicationContext(),
+						Integer.toString(userInfo.pace), Toast.LENGTH_LONG)
+						.show();
 				String msg = sysNotiQueue.poll();
-				if(msg != null){
+				if (msg != null) {
 					startNotificationView(msg);
 					fequently = true;
 				}
 			}
-		}else{ // Things to do if not is_ads
-			//
+		} else { // Things to do if not is_ads
+					//
 		}
-		
+
 		new android.os.Handler().postDelayed(new Runnable() {
 			public void run() {
 				channelInfoRegularUpdater();
+				collectUserInfo();
 			}
-		}, (fequently?30000:10000));
+		}, (fequently ? 30000 : 5000));
+	}
+
+	/* Collect User Info */
+	// !NOTE! data will be sent to temporary server
+	// PLEASE DO MODIFY THE URL
+	private void collectUserInfo() {
+		CollectUserInfoHttpsRequest collectUserInfoHttpsRequest = new CollectUserInfoHttpsRequest(
+				getApplicationContext(), curChannelInfo.number,
+				curChannelInfo.programName, userInfo.name);
+		try{
+			String result = collectUserInfoHttpsRequest.execute().get();
+		}catch(Exception e){
+			// failed to post data to server
+		}
 	}
 }

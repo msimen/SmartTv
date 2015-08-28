@@ -8,9 +8,9 @@ import java.net.URL;
 
 import android.os.AsyncTask;
 
-public class HttpsRequest extends AsyncTask<String, Void, String> {
+public class ChannelInfoHttpsRequest extends AsyncTask<String, Void, String> {
 	private int channel = 0;
-	public HttpsRequest(int channelIn){
+	public ChannelInfoHttpsRequest(int channelIn){
 		super();
 		channel = channelIn;
 	}
