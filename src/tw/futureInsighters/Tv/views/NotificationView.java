@@ -1,5 +1,6 @@
-package tw.futureInsighters.Tv;
+package tw.futureInsighters.Tv.views;
 
+import tw.futureInsighters.Tv.R;
 import itri.smarttvsdk.views.HomeAppRightView;
 import android.content.Context;
 import android.graphics.Color;

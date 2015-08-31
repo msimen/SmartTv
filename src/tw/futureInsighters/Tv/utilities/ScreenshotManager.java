@@ -1,9 +1,10 @@
-package tw.futureInsighters.Tv;
+package tw.futureInsighters.Tv.utilities;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.Date;
 
+import tw.futureInsighters.Tv.R;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.util.Base64;

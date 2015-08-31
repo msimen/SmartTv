@@ -1,4 +1,4 @@
-package tw.futureInsighters.Tv;
+package tw.futureInsighters.Tv.activities;
 
 import itri.smarttvhome.androidservices.HTTPService;
 import itri.smarttvhome.bizs.tVContexts.BoxType;
@@ -128,6 +128,15 @@ import org.allseenaliance.alljoyn.Observer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tw.futureInsighters.Tv.R;
+import tw.futureInsighters.Tv.defines.ClientCMD;
+import tw.futureInsighters.Tv.defines.TVResponse;
+import tw.futureInsighters.Tv.utilities.ChannelInfoHttpsRequest;
+import tw.futureInsighters.Tv.utilities.CollectUserInfoHttpsRequest;
+import tw.futureInsighters.Tv.views.BookmarkView;
+import tw.futureInsighters.Tv.views.BottomView;
+import tw.futureInsighters.Tv.views.HistoryView;
+import tw.futureInsighters.Tv.views.NotificationView;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -173,31 +182,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private final String HDMI_CLOSE_SCALE = "com.mitrastar.intent.closescale.action";
 	private final String HDMI_SET_SCALE = "com.mitrastar.intent.setscale.action";
 
-	/* control CMD */
-
 	private final int appIconWidth = 100;
-	/* part1: client to TV CMD */
-	private final String CONTROLLER_CMD_UI_LEFT = "ISTVSgoleft";
-	private final String CONTROLLER_CMD_UI_RIGHT = "ISTVSgoright";
-	private final String CONTROLLER_CMD_UI_OK = "ISTVSok";
-	private final String CONTROLLER_CMD_UI_RETURN = "ISTVSreturn";
-	private final String CONTROLLER_CMD_UI_SHOW_HISTORY = "ISTVSsh";
-	private final String CONTROLLER_CMD_UI_SHOW_BOOKMARK = "ISTVSsb";
-	private final String CONTROLLER_CMD_UI_HIDE_HISTORY = "ISTVShh";
-	private final String CONTROLLER_CMD_UI_HIDE_BOOKMARK = "ISTVShb";
-	private final String CONTROLLER_CMD_VOLUME = "ISTVSvl";
-	private final String CONTROLLER_CMD_CHANNEL = "ISTVScn";
-	private final String CONTROLLER_CMD_GET_CUR_CHANNEL_INFO = "ISTVScurchannelinfo";
-	private final String CONTROLLER_CMD_GET_CHANNEL_INFO = "ISTVSchannelinfo";
-	private final String CONTROLLER_CMD_HOME = "ISTVShome";
-	private final String CONTROLLER_NOTIFICATION_SYSNOTI = "ISTVSsysnoti";
-	private final String CONTROLLER_CMD_HIDE_APPSLIST = "ISTVShal";
-	private final String SETTING_CMD_USERINFO = "ISTVSsetting";
-	/* part2: TV to client CMD */
-	private final String TV_RESPONSE_CUR_CHANNEL_INFO = "SVTSIcurchannelinfo";
-	private final String TV_RESPONSE_CHANNEL_INFO = "SVTSIchannelinfo";
-	private final String TV_RESPONSE_APPSLISTON = "SVTSIappsliston";
-	private final String TV_RESPONSE_APPSLISTOFF = "SVTSIappslistoff";
 
 	private enum Direction {
 		LEFT, RIGHT
@@ -865,10 +850,12 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 					}
 				});
 
-		// ä¸€èˆ¬App å�¯ä»¥ç›´æŽ¥é–‹å•“AllJoyn ç¶²è·¯æŽ¢ç´¢åŠŸèƒ½
-		// ç•¶Launcher æ™‚ä¸�èƒ½ç›´æŽ¥é–‹å•“,å› ç‚ºReboot è·‘ Launcher
-		// æ™‚,ç¶²è·¯æœªå¿…Ready,éœ€ç­‰ä¸€æ®µæ™‚é–“ç¶²è·¯æ‰�Avaiable,é€™æ™‚æ‰�èƒ½åŸ·è¡Œ
-		// AllJoynç¶²è·¯æŽ¢ç´¢åŠŸèƒ½,è®“å…¶ä»–Dervices çŸ¥é�“æ­¤ä¸»æ©Ÿå­˜åœ¨
+		// ä¸?��è?�¬App å�¯ä»¥ç�?�´æŽ¥é�?��?�å�?��?�AllJoyn ç¶²è·¯æŽ¢ç´¢å?�Ÿèƒ�?
+		// ç?�¶Launcher æ?��?�ä¸�è?�½ç�?�´æŽ¥é�?��?�å�?��??,å?� ç�?�ºReboot è·??
+		// Launcher
+		// æ?��??,ç¶²è·¯æ?�ªå¿�?�Ready,é?�€ç­?�ä¸€æ®µæ?��?�é�?��?�ç¶²è·¯æ�?��Avaiable,é?��?��æ?��?�æ�?��è?�½åŸ·è¡�?
+		// AllJoynç¶²è·¯æŽ¢ç´¢å?�Ÿèƒ�?,è®?�å�?�¶ä»�?�Dervices
+		// çŸ¥é��?�æ­¤ä¸»æ©Ÿå­˜åœ�?
 		TimerTask networkAvaiableTimerTask = new NetworkAvaiableTimerTask();
 		networkAvaiableTimerTask.run();
 
@@ -894,8 +881,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		getScreenSize();
 		// showAppsList();
 
-		// Simulate click join button
+		/* alljoyn join channel */
 		alljoynJoin();
+
+		/* notify client that TV is opened */
+		mChatApplication.newLocalUserMessage(TVResponse.TV_OPENED);
 
 		/* info regular updater start */
 		channelInfoRegularUpdater();
@@ -909,14 +899,14 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		setAppContentView(bv);
 		loadApps();
 		updateTimeAndChannelTime();
-		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTON);
+		mChatApplication.newLocalUserMessage(TVResponse.APPSLISTON);
 
 	}
 
 	private void startBookmarkView() {
 		// bookmarkViewStatus = UIStatus.OPEN;
 		appsListStatus = UIStatus.CLOSED;
-		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTOFF);
+		mChatApplication.newLocalUserMessage(TVResponse.APPSLISTOFF);
 		BookmarkView fv = new BookmarkView(this);
 		this.setAppContentView(fv);
 
@@ -926,7 +916,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private void startHistoryView() {
 		// historyViewStatus = UIStatus.OPEN;
 		appsListStatus = UIStatus.CLOSED;
-		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTOFF);
+		mChatApplication.newLocalUserMessage(TVResponse.APPSLISTOFF);
 		HistoryView fv = new HistoryView(this);
 		this.setAppContentView(fv);
 	}
@@ -942,7 +932,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		}
 
 		appsListStatus = UIStatus.CLOSED;
-		mChatApplication.newLocalUserMessage(TV_RESPONSE_APPSLISTOFF);
+		mChatApplication.newLocalUserMessage(TVResponse.APPSLISTOFF);
 		NotificationView nv = new NotificationView(this);
 		this.setAppContentView(nv);
 
@@ -1151,7 +1141,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 	}
 
-	private void updateHistory() {
+	private void performActions() {
 
 		String messager = mChatApplication.getHistoryMessage();
 		// Toast.makeText(MainActivity.this, "msg got! - " + messager,
@@ -1159,7 +1149,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 		// TV Control Command Handler Goes Here
 
-		if (messager.contains(CONTROLLER_CMD_UI_LEFT)) {
+		if (messager.contains(ClientCMD.CMD_UI_LEFT)) {
 			// runSysView.downClick(); // update UI ?
 			if (appsListStatus == UIStatus.OPEN) {
 				appListMove(Direction.RIGHT);
@@ -1168,7 +1158,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				this.tVContextFactory.getTvPlayer().toPreChannel();
 
 			}
-		} else if (messager.contains(CONTROLLER_CMD_UI_RIGHT)) {
+		} else if (messager.contains(ClientCMD.CMD_UI_RIGHT)) {
 			// runSysView.upClick(); // update UI ?
 			if (appsListStatus == UIStatus.OPEN) {
 				appListMove(Direction.LEFT);
@@ -1177,7 +1167,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				this.tVContextFactory.getTvPlayer().toNextChannel();
 
 			}
-		} else if (messager.contains(CONTROLLER_CMD_UI_OK)) {
+		} else if (messager.contains(ClientCMD.CMD_UI_OK)) {
 			DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 			if (appsListStatus == UIStatus.OPEN) {
 				runApp();
@@ -1191,21 +1181,21 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				// do nothing
 			}
 
-		} else if (messager.contains(CONTROLLER_CMD_UI_RETURN)) {
+		} else if (messager.contains(ClientCMD.CMD_UI_RETURN)) {
 			hideBottomView();
-		} else if (messager.contains(CONTROLLER_CMD_UI_SHOW_BOOKMARK)) {
+		} else if (messager.contains(ClientCMD.CMD_UI_SHOW_BOOKMARK)) {
 			startBookmarkView();
-		} else if (messager.contains(CONTROLLER_CMD_UI_SHOW_HISTORY)) {
+		} else if (messager.contains(ClientCMD.CMD_UI_SHOW_HISTORY)) {
 			startHistoryView();
-		} else if (messager.contains(CONTROLLER_CMD_UI_HIDE_BOOKMARK)) {
+		} else if (messager.contains(ClientCMD.CMD_UI_HIDE_BOOKMARK)) {
 			hideBookmarkView();
-		} else if (messager.contains(CONTROLLER_CMD_UI_HIDE_HISTORY)) {
+		} else if (messager.contains(ClientCMD.CMD_UI_HIDE_HISTORY)) {
 			hideHistoryView();
-		} else if (messager.contains(CONTROLLER_CMD_VOLUME)) {
+		} else if (messager.contains(ClientCMD.CMD_VOLUME)) {
 			int newVl = -1;
 			try {
 				newVl = Integer.parseInt(messager.substring(messager
-						.indexOf(CONTROLLER_CMD_VOLUME) + 9));
+						.indexOf(ClientCMD.CMD_VOLUME) + 9));
 			} catch (NumberFormatException e) {
 				Toast.makeText(MainActivity.this, e.toString(),
 						Toast.LENGTH_SHORT).show();
@@ -1213,17 +1203,17 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			}
 			setVolume(newVl);
 
-		} else if (messager.contains(CONTROLLER_CMD_CHANNEL)) {
+		} else if (messager.contains(ClientCMD.CMD_CHANNEL)) {
 			int newCn = -1;
 			try {
 				newCn = Integer.parseInt(messager.substring(messager
-						.indexOf(CONTROLLER_CMD_CHANNEL) + 9));
+						.indexOf(ClientCMD.CMD_CHANNEL) + 9));
 			} catch (NumberFormatException e) {
 
 				return;
 			}
 			setChannel(newCn);
-		} else if (messager.contains(CONTROLLER_CMD_GET_CUR_CHANNEL_INFO)) {
+		} else if (messager.contains(ClientCMD.CMD_GET_CUR_CHANNEL_INFO)) {
 			// get information from server
 			curChannelInfo = getChannelInfo(curChannelInfo.number);
 
@@ -1236,15 +1226,15 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			String isAds = String.valueOf(curChannelInfo.isAds);
 
 			// pack the message and response to client
-			String response = TV_RESPONSE_CUR_CHANNEL_INFO + " *" + number
+			String response = TVResponse.CUR_CHANNEL_INFO + " *" + number
 					+ " **" + channelName + " ***" + programName + " ****"
 					+ intro + " *****" + isAds + " ******";
 			mChatApplication.newLocalUserMessage(response);
-		} else if (messager.contains(CONTROLLER_CMD_GET_CHANNEL_INFO)) {
+		} else if (messager.contains(ClientCMD.CMD_GET_CHANNEL_INFO)) {
 			int channel;
 			try {
 				channel = Integer.parseInt(messager.substring(messager
-						.indexOf(CONTROLLER_CMD_GET_CHANNEL_INFO) + 16));
+						.indexOf(ClientCMD.CMD_GET_CHANNEL_INFO) + 16));
 			} catch (Exception e) {
 				return;
 			}
@@ -1257,35 +1247,36 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			String isAds = String.valueOf(resultChannelInfo.isAds);
 
 			// pack the message and response to client
-			String response = TV_RESPONSE_CHANNEL_INFO + " *" + number + " **"
+			String response = TVResponse.CHANNEL_INFO + " *" + number + " **"
 					+ channelName + " ***" + programName + " ****" + intro
 					+ " *****" + isAds + " ******";
 			mChatApplication.newLocalUserMessage(response);
 
-		} else if (messager.contains(CONTROLLER_CMD_HOME)) {
+		} else if (messager.contains(ClientCMD.CMD_HOME)) {
 			backToHome();
-		} else if (messager.contains(CONTROLLER_NOTIFICATION_SYSNOTI)) { // while
-																			// get
-																			// system
-																			// notification
-																			// from
-																			// user's
-																			// phone
+		} else if (messager.contains(ClientCMD.NOTIFICATION_SYSNOTI)) { // while
+																		// get
+																		// system
+																		// notification
+																		// from
+																		// user's
+																		// phone
 			if (userInfo.notification != 1)
 				return; // check whether user disabled sync notification
 
 			startNotificationView(messager.substring(messager
-					.indexOf(CONTROLLER_NOTIFICATION_SYSNOTI + " -") + 14));
-		} else if (messager.contains(CONTROLLER_CMD_HIDE_APPSLIST)) {
+					.indexOf(ClientCMD.NOTIFICATION_SYSNOTI + " -") + 14));
+		} else if (messager.contains(ClientCMD.CMD_HIDE_APPSLIST)) {
 			if (appsListStatus == UIStatus.OPEN) {
 				hideBottomView();
 			}
-		} else if (messager.contains(SETTING_CMD_USERINFO)) {
+		} else if (messager.contains(ClientCMD.SETTING_CMD_USERINFO)) {
 			try {
 				// set user info
-				userInfo.name = messager.substring(
-						messager.indexOf(SETTING_CMD_USERINFO + " -") + 14,
-						messager.indexOf(" --"));
+				userInfo.name = messager
+						.substring(
+								messager.indexOf(ClientCMD.SETTING_CMD_USERINFO
+										+ " -") + 14, messager.indexOf(" --"));
 
 				String params = messager.substring(messager.indexOf(" --") + 3);
 				userInfo.gender = Integer.parseInt(params.substring(0, 1));
@@ -1312,7 +1303,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			case HANDLE_HISTORY_CHANGED_EVENT: {
 				Log.i("",
 						"mHandler.handleMessage(): HANDLE_HISTORY_CHANGED_EVENT");
-				updateHistory();
+				performActions();
 				break;
 			}
 
@@ -1392,7 +1383,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		for (ResolveInfo info : apps) {
 			ImageView thisApp = new ImageView(this);
 			thisApp.setImageDrawable(info.activityInfo
-					.loadIcon(getPackageManager())); // setImagerResource¥Î©ó¹Ï¤ù¬OR.drawable¤º®e®É
+					.loadIcon(getPackageManager())); // setImagerResource¥?�©ó¹Ï¤ù¬OR.drawable¤º®e®??
 			thisApp.setTag("app" + Integer.toString(count));
 
 			appsList.addView(thisApp, new LinearLayout.LayoutParams(
@@ -1506,6 +1497,21 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		intent.setComponent(componet); // the function that specifies an
 										// application to run
 		startActivity(intent);
+
+		// notify client specific app is opened
+		if (appPackage.equals("tw.futureInsighters.videoviewer")) {
+			// notify client that VideoViewer is opened
+			mChatApplication.newLocalUserMessage(TVResponse.VIDEOVIEWER_OPENED);
+		} else if (appPackage.equals("tw.futureInsighters.imageviewer")) {
+			// notify client that VideoViewer is opened
+			mChatApplication.newLocalUserMessage(TVResponse.IMAGEVIEWER_OPENED);
+		} else if (appPackage.equals("tw.futureInsighters.Tv")) {
+			// notify client that VideoViewer is opened
+			mChatApplication.newLocalUserMessage(TVResponse.TV_OPENED);
+		}
+		
+		// To make the controller (client) easier, and avoid potential miss use
+		hideBottomView();
 	}
 
 	/* responsive UI */
@@ -1825,8 +1831,8 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		this.channel = getPersistManager().getValue("channel");
 		if (this.channel.equals("") == false) {
 			channelPressCount++;
-			this.tVContextFactory.getTvPlayer().toChannel(
-					Integer.parseInt(channel));
+			// this.tVContextFactory.getTvPlayer().toChannel(
+			// Integer.parseInt(channel));
 			ToChannelTimerTask myTask = new ToChannelTimerTask();
 			Timer myTimer = new Timer();
 			// myTimer.schedule(myTask, 5000);
@@ -1873,6 +1879,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	@Override
 	protected void onResume() {
 		super.onResume();
+
 		if (needIRPermission == false) {
 			if (this.isStratToFull == true) {
 				// this.tvvTV.toFullMode();
@@ -2309,6 +2316,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				// }
 
 				backKeyHandle();
+				backToHome();
 			}
 			if (keyCode == 183)
 				homeKeyHandle();
@@ -2375,6 +2383,12 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		// if(this.allJoynBusHandler!=null)
 		// this.allJoynBusHandler.sendEmptyMessage(AllJoynBusHandler.DISCONNECT);
 		super.onDestroy();
+	}
+
+	@Override
+	public void onBackPressed() {
+		// super.onBackPressed();
+		this.onDestroy();
 	}
 
 	private class NetworkAvaiableTimerTask extends TimerTask {
@@ -2495,9 +2509,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		// Things to do if is_ads
 		if (curChannelInfo.isAds) {
 			if (userInfo.pace < 2) {
-				Toast.makeText(getApplicationContext(),
-						Integer.toString(userInfo.pace), Toast.LENGTH_LONG)
-						.show();
+				// Toast.makeText(getApplicationContext(),
+				// Integer.toString(userInfo.pace), Toast.LENGTH_LONG)
+				// .show();
 				String msg = sysNotiQueue.poll();
 				if (msg != null) {
 					startNotificationView(msg);
@@ -2523,9 +2537,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		CollectUserInfoHttpsRequest collectUserInfoHttpsRequest = new CollectUserInfoHttpsRequest(
 				getApplicationContext(), curChannelInfo.number,
 				curChannelInfo.programName, userInfo.name);
-		try{
+		try {
 			String result = collectUserInfoHttpsRequest.execute().get();
-		}catch(Exception e){
+		} catch (Exception e) {
 			// failed to post data to server
 		}
 	}

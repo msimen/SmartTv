@@ -1,10 +1,10 @@
-package tw.futureInsighters.Tv;
+package tw.futureInsighters.Tv.activities;
 
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.util.Log;
-import tw.futureInsighters.Tv.MainApplication;
+import tw.futureInsighters.Tv.activities.MainApplication;
 
 import java.util.List;
 import java.util.ArrayList;

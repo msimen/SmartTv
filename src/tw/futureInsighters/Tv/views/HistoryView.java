@@ -1,4 +1,4 @@
-package tw.futureInsighters.Tv;
+package tw.futureInsighters.Tv.views;
 
 import tw.futureInsighters.Tv.R;
 import itri.smarttvsdk.views.HomeAppFullView;
@@ -12,22 +12,18 @@ import android.view.View;
 /**
  * Created by mimi on 15/3/25.
  */
-public class BookmarkView extends HomeAppFullView {
+public class HistoryView extends HomeAppFullView {
 	private DrawerLayout drawerLayout;
 
-	public BookmarkView(Context context) {
+	public HistoryView(Context context) {
 		super(context);
 	}
 
-	public BookmarkView(Context context, int mode) {
-		super(context);
-	}
-
-	public BookmarkView(Context context, AttributeSet attrs) {
+	public HistoryView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
-	public BookmarkView(Context context, AttributeSet attrs, int defStyleAttr) {
+	public HistoryView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
 
@@ -36,13 +32,14 @@ public class BookmarkView extends HomeAppFullView {
 		super.onInit();
 		View content = this.inflate(getContext(), R.layout.fullview, this);
 		this.setBackgroundColor(Color.TRANSPARENT);
-		
+
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
 		new android.os.Handler().postDelayed(new Runnable() {
 			public void run() {
-				drawerLayout.openDrawer(Gravity.START);
+				drawerLayout.openDrawer(Gravity.END);
 			}
 		}, 300);
+
 	}
 }
