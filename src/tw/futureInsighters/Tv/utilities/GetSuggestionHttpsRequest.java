@@ -31,7 +31,8 @@ public class GetSuggestionHttpsRequest extends AsyncTask<String, Void, String> {
 			con.setRequestProperty("User-Agent", "Mozilla/5.0");
 			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 	
-			String urlParameters = "username="+userName+"&mac="+new SoftwareHashIdManager(context).getSoftwareRandomID();
+			String urlParameters = "username=" + userName + "&mac="
+					+ new SoftwareHashIdManager(context).getSoftwareRandomID();
 			// Send post request
 			
 			con.setDoOutput(true);

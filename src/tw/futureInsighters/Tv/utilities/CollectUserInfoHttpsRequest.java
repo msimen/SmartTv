@@ -47,7 +47,8 @@ public class CollectUserInfoHttpsRequest extends
 			String urlParameters = "channel=" + Integer.toString(this.channel)
 					+ "&programname=" + URLEncoder.encode(programname, "utf-8")
 					+ "&username=" + URLEncoder.encode(username, "utf-8")
-					+ "&mac=" + getSoftwareRandomID();
+					+ "&mac="
+					+ new SoftwareHashIdManager(context).getSoftwareRandomID();
 
 			// Send post request
 
