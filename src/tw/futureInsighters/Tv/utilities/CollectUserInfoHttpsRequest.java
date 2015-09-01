@@ -84,7 +84,7 @@ public class CollectUserInfoHttpsRequest extends
 		return;
 	}
 
-	private String getSoftwareRandomID() {
+	public String getSoftwareRandomID() {
 		// TelephonyManager tManager =
 		// (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
 		// String uuid = tManager.getDeviceId();
@@ -106,7 +106,7 @@ public class CollectUserInfoHttpsRequest extends
 
 	// this function was copied from
 	// http://www.mysamplecode.com/2011/10/android-generate-md5-hash.html
-	private static String md5(String s) {
+	private String md5(String s) {
 		try {
 
 			// Create MD5 Hash

@@ -119,8 +119,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import org.allseenaliance.alljoyn.AllJoynService;
 import org.allseenaliance.alljoyn.Observable;
@@ -133,6 +135,7 @@ import tw.futureInsighters.Tv.defines.ClientCMD;
 import tw.futureInsighters.Tv.defines.TVResponse;
 import tw.futureInsighters.Tv.utilities.ChannelInfoHttpsRequest;
 import tw.futureInsighters.Tv.utilities.CollectUserInfoHttpsRequest;
+import tw.futureInsighters.Tv.utilities.GetSuggestionHttpsRequest;
 import tw.futureInsighters.Tv.views.BookmarkView;
 import tw.futureInsighters.Tv.views.BottomView;
 import tw.futureInsighters.Tv.views.HistoryView;
@@ -922,6 +925,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	}
 
 	private void startNotificationView(String msg) {
+		/*
+		 * param format:
+		 * "[package name(who sent this msg)] --[msg title] ---[msg context]"
+		 */
+
 		// if user pace is set to "slow", put notification into queue so that
 		// they will
 		// not be interrupted while watching program
@@ -961,7 +969,10 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			notificationImage.setImageResource(R.drawable.whatsapp_icon);
 		} else if (packageName.equals("com.linkedin.android")) { // linkedIn
 			notificationImage.setImageResource(R.drawable.linkedin_icon);
-		} else { // other
+		} else if (packageName.equals("channelSuggestion")) {
+			notificationWrapper.setBackgroundColor(0xDDFF2222);
+		} else {
+			// other
 		}
 
 		final TextView notificationTitle = (TextView) findViewById(R.id.notificationTitle);
@@ -982,11 +993,13 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private void hideBookmarkView() {
 		// bookmarkViewStatus = UIStatus.CLOSED();
 		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		if(drawerLayout == null )return;
 		drawerLayout.closeDrawer(Gravity.START);
 	}
 
 	private void hideHistoryView() {
 		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		if(drawerLayout == null )return;
 		drawerLayout.closeDrawer(Gravity.END);
 	}
 
@@ -1509,7 +1522,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			// notify client that VideoViewer is opened
 			mChatApplication.newLocalUserMessage(TVResponse.TV_OPENED);
 		}
-		
+
 		// To make the controller (client) easier, and avoid potential miss use
 		hideBottomView();
 	}
@@ -1528,6 +1541,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	/* get channel info from remote server (ITRI) */
 
 	private ChannelInfo getChannelInfo(int targetChannel) {
+		
 		ChannelInfo curChannelInfo = new ChannelInfo();
 		curChannelInfo.number = targetChannel;
 
@@ -1621,6 +1635,10 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	/* TV control */
 
 	private void setChannel(int newCn) {
+		// NOTE! CHANNEL LIMIT GOES HERE
+		if (newCn > 200 || newCn < 4)
+			return;
+
 		Toast.makeText(getApplicationContext(),
 				"Channel : " + Integer.toString(newCn), Toast.LENGTH_SHORT)
 				.show();
@@ -2508,6 +2526,13 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 		// Things to do if is_ads
 		if (curChannelInfo.isAds) {
+			fequently = true;
+
+			// get channel suggestion
+			 if (true){ //new Random().nextInt(4) == 1
+			 getChannelSuggestion();
+			 }
+
 			if (userInfo.pace < 2) {
 				// Toast.makeText(getApplicationContext(),
 				// Integer.toString(userInfo.pace), Toast.LENGTH_LONG)
@@ -2515,11 +2540,10 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				String msg = sysNotiQueue.poll();
 				if (msg != null) {
 					startNotificationView(msg);
-					fequently = true;
 				}
 			}
 		} else { // Things to do if not is_ads
-					//
+
 		}
 
 		new android.os.Handler().postDelayed(new Runnable() {
@@ -2527,20 +2551,51 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 				channelInfoRegularUpdater();
 				collectUserInfo();
 			}
-		}, (fequently ? 30000 : 5000));
+		}, (fequently ? 10000 : 30000));
 	}
 
-	/* Collect User Info */
+	/* Collect User Info and get suggestion from server */
 	// !NOTE! data will be sent to temporary server
 	// PLEASE DO MODIFY THE URL
 	private void collectUserInfo() {
-		CollectUserInfoHttpsRequest collectUserInfoHttpsRequest = new CollectUserInfoHttpsRequest(
-				getApplicationContext(), curChannelInfo.number,
-				curChannelInfo.programName, userInfo.name);
+
+		new Thread(new Runnable() {
+			public void run() {
+				try {
+					CollectUserInfoHttpsRequest collectUserInfoHttpsRequest = new CollectUserInfoHttpsRequest(
+							getApplicationContext(), curChannelInfo.number,
+							curChannelInfo.programName, userInfo.name);
+
+					collectUserInfoHttpsRequest.execute().get(400,
+							TimeUnit.MILLISECONDS);
+				} catch (Exception e) {
+					// failed to post data to server
+				}
+			}
+		}).start();
+	}
+
+	private void getChannelSuggestion() {
+		Toast.makeText(getApplicationContext(), "WOWOWO", Toast.LENGTH_SHORT).show();
+		GetSuggestionHttpsRequest getSuggestionHttpsRequest = new GetSuggestionHttpsRequest(
+				getApplicationContext(), userInfo.name);
+		String result = "";
 		try {
-			String result = collectUserInfoHttpsRequest.execute().get();
+			result = getSuggestionHttpsRequest.execute().get(1000,
+					TimeUnit.MILLISECONDS);
 		} catch (Exception e) {
-			// failed to post data to server
+
 		}
+
+		if (result.matches("-?\\d+(\\.\\d+)?")) {
+			startNotificationView("channelSuggestion --You may also like... ---Channel "
+					+ result);
+		}
+
+		new Thread(new Runnable() {
+			public void run() {
+				
+			}
+		}).start();
 	}
 }
