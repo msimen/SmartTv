@@ -924,7 +924,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		this.setAppContentView(fv);
 	}
 
-	private void startNotificationView(String msg) {
+	private void startNotificationView(String msg, Boolean instantly) {
 		/*
 		 * param format:
 		 * "[package name(who sent this msg)] --[msg title] ---[msg context]"
@@ -933,7 +933,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		// if user pace is set to "slow", put notification into queue so that
 		// they will
 		// not be interrupted while watching program
-		if (userInfo.pace < 2 && !curChannelInfo.isAds) {
+		if (userInfo.pace < 2 && !curChannelInfo.isAds && !instantly) {
 			// put msg into notification queue
 			sysNotiQueue.add(msg);
 			return;
@@ -970,7 +970,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		} else if (packageName.equals("com.linkedin.android")) { // linkedIn
 			notificationImage.setImageResource(R.drawable.linkedin_icon);
 		} else if (packageName.equals("channelSuggestion")) {
-			notificationWrapper.setBackgroundColor(0xDDFF2222);
+			notificationWrapper.setBackgroundColor(0xDDEF6C00);
+		} else if (packageName.equals("channelChanged")) {
+			notificationWrapper.setBackgroundColor(0xDD263238);
 		} else {
 			// other
 		}
@@ -979,6 +981,10 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		notificationTitle.setText(msgTitle);
 		final TextView notificationContext = (TextView) findViewById(R.id.notificationContext);
 		notificationContext.setText(msgContext);
+	}
+	// override: with default value
+	private void startNotificationView(String msg) {
+		startNotificationView(msg, false);
 	}
 
 	private void hideBottomView() {
@@ -993,13 +999,15 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private void hideBookmarkView() {
 		// bookmarkViewStatus = UIStatus.CLOSED();
 		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-		if(drawerLayout == null )return;
+		if (drawerLayout == null)
+			return;
 		drawerLayout.closeDrawer(Gravity.START);
 	}
 
 	private void hideHistoryView() {
 		final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-		if(drawerLayout == null )return;
+		if (drawerLayout == null)
+			return;
 		drawerLayout.closeDrawer(Gravity.END);
 	}
 
@@ -1007,39 +1015,39 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 	@Override
 	protected void onOtherKey(int keyCode) {
-		Toast.makeText(this, "stepbystep_IR_Other:" + keyCode,
-				Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "stepbystep_IR_Other:" + keyCode,
+//				Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onNumberKey(int number) {
-		Toast.makeText(this, "stepbystep_IR_Number:" + number,
-				Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "stepbystep_IR_Number:" + number,
+//				Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onUpKey() {
-		Toast.makeText(this, "stepbystep_IR_Up", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "stepbystep_IR_Up", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onDownKey() {
-		Toast.makeText(this, "stepbystep_IR_Down", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "stepbystep_IR_Down", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onLeftKey() {
-		Toast.makeText(this, "stepbystep_IR_Left", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "stepbystep_IR_Left", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onRightKey() {
-		Toast.makeText(this, "stepbystep_IR_Right", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "stepbystep_IR_Right", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onOkKey() {
-		Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_SHORT).show();
 	}
 
 	/* Alljoyn functions */
@@ -1541,7 +1549,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	/* get channel info from remote server (ITRI) */
 
 	private ChannelInfo getChannelInfo(int targetChannel) {
-		
+
 		ChannelInfo curChannelInfo = new ChannelInfo();
 		curChannelInfo.number = targetChannel;
 
@@ -1554,7 +1562,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			result = e.toString();
 			Toast.makeText(
 					getApplicationContext(),
-					"Something went wrong! Please check your Internet connection",
+					"Internet Connection not works well",
 					Toast.LENGTH_SHORT).show();
 			return curChannelInfo;
 		}
@@ -1574,10 +1582,10 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			Boolean isAds = JSONResult.getBoolean("isads");
 			curChannelInfo.isAds = isAds;
 		} catch (JSONException e) {
-			Toast.makeText(
-					getApplicationContext(),
-					"Something went wrong! Please check your Internet connection",
-					Toast.LENGTH_SHORT).show();
+//			Toast.makeText(
+//					getApplicationContext(),
+//					"Something went wrong! Please check your Internet connection",
+//					Toast.LENGTH_SHORT).show();
 
 		}
 		return curChannelInfo;
@@ -1639,10 +1647,14 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		if (newCn > 200 || newCn < 4)
 			return;
 
-		Toast.makeText(getApplicationContext(),
-				"Channel : " + Integer.toString(newCn), Toast.LENGTH_SHORT)
-				.show();
+//		Toast.makeText(getApplicationContext(),
+//				"Channel : " + Integer.toString(newCn), Toast.LENGTH_SHORT)
+//				.show();
 		curChannelInfo.number = newCn;
+		
+		// update channel info
+		curChannelInfo = getChannelInfo(curChannelInfo.number);
+		startNotificationView("channelChanged --Channel: "+ curChannelInfo.number +" ---" + curChannelInfo.programName, true);
 		this.tVContextFactory.getTvPlayer().toChannel(newCn);
 
 	}
@@ -2123,7 +2135,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	}
 
 	@Override
-	protected void onStop() {
+	protected void onStop() {		
 		this.cmdAdReceiveBroadcastReceiver.unregister();
 		this.cmdAppBottomReceiveBroadcastReceiver.unregister();
 		this.cmdAppRightReceiveBroadcastReceiver.unregister();
@@ -2262,8 +2274,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 			this.channel = channel + numberCode;
 			this.channel = this.right(channel, 3);
-			Toast.makeText(MainActivity.this, "channel:" + channel,
-					Toast.LENGTH_SHORT).show();
+//			Toast.makeText(MainActivity.this, "channel:" + channel,
+//					Toast.LENGTH_SHORT).show();
+			
 			// this.channelView.setText(channel);
 			// this.channelView.setVisibility(View.VISIBLE);
 			this.channelPressCount++;
@@ -2395,11 +2408,17 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		}
 		return str.substring(str.length() - len);
 	}
+	
 
 	@Override
 	protected void onDestroy() {
 		// if(this.allJoynBusHandler!=null)
 		// this.allJoynBusHandler.sendEmptyMessage(AllJoynBusHandler.DISCONNECT);
+		mChatApplication = (MainApplication) getApplication();
+		mChatApplication.deleteObserver(this);
+
+		mChatApplication.quit();
+
 		super.onDestroy();
 	}
 
@@ -2521,17 +2540,22 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private void channelInfoRegularUpdater() {
 		// whether the next update should come faster or not
 		Boolean fequently = false;
+		
+		// get current channel. For fear that user info will not be collected in
+		// IR mode
+		curChannelInfo.number = getCurChannel();
+		
 		// update channel info
-		getChannelInfo(curChannelInfo.number);
+		curChannelInfo = getChannelInfo(curChannelInfo.number);
 
 		// Things to do if is_ads
 		if (curChannelInfo.isAds) {
 			fequently = true;
 
 			// get channel suggestion
-			 if (true){ //new Random().nextInt(4) == 1
-			 getChannelSuggestion();
-			 }
+			if (new Random().nextInt(4) == 1) { //
+				getChannelSuggestion();
+			}
 
 			if (userInfo.pace < 2) {
 				// Toast.makeText(getApplicationContext(),
@@ -2576,7 +2600,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	}
 
 	private void getChannelSuggestion() {
-		Toast.makeText(getApplicationContext(), "WOWOWO", Toast.LENGTH_SHORT).show();
 		GetSuggestionHttpsRequest getSuggestionHttpsRequest = new GetSuggestionHttpsRequest(
 				getApplicationContext(), userInfo.name);
 		String result = "";
@@ -2594,7 +2617,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 		new Thread(new Runnable() {
 			public void run() {
-				
+
 			}
 		}).start();
 	}

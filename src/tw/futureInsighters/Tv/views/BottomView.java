@@ -47,10 +47,10 @@ public class BottomView extends HomeAppBottomView {
 				appsLayout = (HorizontalScrollView) findViewById(R.id.appsLayout);
 				final LinearLayout timeLayout = (LinearLayout) findViewById(R.id.timeLayout);
 				
-				appsLayout.animate().translationY(450);
+				appsLayout.setTranslationY(450);
 				appsLayout.animate().translationY(0);
 				
-				timeLayout.animate().translationX(1280);
+				timeLayout.setTranslationX(1280);
 				timeLayout.animate().translationX(0);
 			}
 		}, 150);
