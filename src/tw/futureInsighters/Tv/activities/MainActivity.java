@@ -982,6 +982,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		final TextView notificationContext = (TextView) findViewById(R.id.notificationContext);
 		notificationContext.setText(msgContext);
 	}
+
 	// override: with default value
 	private void startNotificationView(String msg) {
 		startNotificationView(msg, false);
@@ -1015,39 +1016,42 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 	@Override
 	protected void onOtherKey(int keyCode) {
-//		Toast.makeText(this, "stepbystep_IR_Other:" + keyCode,
-//				Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "stepbystep_IR_Other:" + keyCode,
+		// Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onNumberKey(int number) {
-//		Toast.makeText(this, "stepbystep_IR_Number:" + number,
-//				Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "stepbystep_IR_Number:" + number,
+		// Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onUpKey() {
-//		Toast.makeText(this, "stepbystep_IR_Up", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "stepbystep_IR_Up", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onDownKey() {
-//		Toast.makeText(this, "stepbystep_IR_Down", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "stepbystep_IR_Down",
+		// Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onLeftKey() {
-//		Toast.makeText(this, "stepbystep_IR_Left", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "stepbystep_IR_Left",
+		// Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onRightKey() {
-//		Toast.makeText(this, "stepbystep_IR_Right", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "stepbystep_IR_Right",
+		// Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	protected void onOkKey() {
-//		Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "stepbystep_IR_Ok", Toast.LENGTH_SHORT).show();
 	}
 
 	/* Alljoyn functions */
@@ -1235,22 +1239,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			}
 			setChannel(newCn);
 		} else if (messager.contains(ClientCMD.CMD_GET_CUR_CHANNEL_INFO)) {
-			// get information from server
-			curChannelInfo = getChannelInfo(curChannelInfo.number);
 
-			// prepare information
+			// deprecated
 
-			String channelName = curChannelInfo.channelName;
-			String programName = curChannelInfo.programName;
-			String number = Integer.toString(curChannelInfo.number);
-			String intro = curChannelInfo.programDescription;
-			String isAds = String.valueOf(curChannelInfo.isAds);
-
-			// pack the message and response to client
-			String response = TVResponse.CUR_CHANNEL_INFO + " *" + number
-					+ " **" + channelName + " ***" + programName + " ****"
-					+ intro + " *****" + isAds + " ******";
-			mChatApplication.newLocalUserMessage(response);
 		} else if (messager.contains(ClientCMD.CMD_GET_CHANNEL_INFO)) {
 			int channel;
 			try {
@@ -1560,10 +1551,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			result = https.execute().get();
 		} catch (Exception e) {
 			result = e.toString();
-			Toast.makeText(
-					getApplicationContext(),
-					"Internet Connection not works well",
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(),
+					"Internet Connection not works well", Toast.LENGTH_SHORT)
+					.show();
 			return curChannelInfo;
 		}
 		JSONObject JSONResult;
@@ -1582,13 +1572,30 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 			Boolean isAds = JSONResult.getBoolean("isads");
 			curChannelInfo.isAds = isAds;
 		} catch (JSONException e) {
-//			Toast.makeText(
-//					getApplicationContext(),
-//					"Something went wrong! Please check your Internet connection",
-//					Toast.LENGTH_SHORT).show();
+			// Toast.makeText(
+			// getApplicationContext(),
+			// "Something went wrong! Please check your Internet connection",
+			// Toast.LENGTH_SHORT).show();
 
 		}
 		return curChannelInfo;
+	}
+
+	public void returnChannelInfo() {
+		
+		// prepare information
+
+		String channelName = curChannelInfo.channelName;
+		String programName = curChannelInfo.programName;
+		String number = Integer.toString(curChannelInfo.number);
+		String intro = curChannelInfo.programDescription;
+		String isAds = String.valueOf(curChannelInfo.isAds);
+
+		// pack the message and response to client
+		String response = TVResponse.CUR_CHANNEL_INFO + " *" + number + " **"
+				+ channelName + " ***" + programName + " ****" + intro
+				+ " *****" + isAds + " ******";
+		mChatApplication.newLocalUserMessage(response);
 	}
 
 	/* get the current channel that is playing (from SDK) */
@@ -1647,15 +1654,20 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		if (newCn > 200 || newCn < 4)
 			return;
 
-//		Toast.makeText(getApplicationContext(),
-//				"Channel : " + Integer.toString(newCn), Toast.LENGTH_SHORT)
-//				.show();
+		// Toast.makeText(getApplicationContext(),
+		// "Channel : " + Integer.toString(newCn), Toast.LENGTH_SHORT)
+		// .show();
 		curChannelInfo.number = newCn;
-		
+
 		// update channel info
 		curChannelInfo = getChannelInfo(curChannelInfo.number);
-		startNotificationView("channelChanged --Channel: "+ curChannelInfo.number +" ---" + curChannelInfo.programName, true);
+		startNotificationView("channelChanged --Channel: "
+				+ curChannelInfo.number + " ---" + curChannelInfo.programName,
+				true);
 		this.tVContextFactory.getTvPlayer().toChannel(newCn);
+		
+		// return channel info automatically when turned
+		returnChannelInfo();
 
 	}
 
@@ -2135,7 +2147,7 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	}
 
 	@Override
-	protected void onStop() {		
+	protected void onStop() {
 		this.cmdAdReceiveBroadcastReceiver.unregister();
 		this.cmdAppBottomReceiveBroadcastReceiver.unregister();
 		this.cmdAppRightReceiveBroadcastReceiver.unregister();
@@ -2274,9 +2286,9 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 
 			this.channel = channel + numberCode;
 			this.channel = this.right(channel, 3);
-//			Toast.makeText(MainActivity.this, "channel:" + channel,
-//					Toast.LENGTH_SHORT).show();
-			
+			// Toast.makeText(MainActivity.this, "channel:" + channel,
+			// Toast.LENGTH_SHORT).show();
+
 			// this.channelView.setText(channel);
 			// this.channelView.setVisibility(View.VISIBLE);
 			this.channelPressCount++;
@@ -2408,7 +2420,6 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 		}
 		return str.substring(str.length() - len);
 	}
-	
 
 	@Override
 	protected void onDestroy() {
@@ -2540,11 +2551,11 @@ public class MainActivity extends HomeAppActivityBase implements Observer,
 	private void channelInfoRegularUpdater() {
 		// whether the next update should come faster or not
 		Boolean fequently = false;
-		
+
 		// get current channel. For fear that user info will not be collected in
 		// IR mode
 		curChannelInfo.number = getCurChannel();
-		
+
 		// update channel info
 		curChannelInfo = getChannelInfo(curChannelInfo.number);
 
